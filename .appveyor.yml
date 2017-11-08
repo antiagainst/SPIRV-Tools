@@ -5,12 +5,10 @@
 version: "{build}"
 
 os:
-  - Visual Studio 2013
-  - Visual Studio 2015
   - Visual Studio 2017
 
 platform:
-  - Any CPU
+  - x64
 
 configuration:
   - Debug
@@ -36,8 +34,30 @@ build:
 
 build_script:
   - mkdir build && cd build
-  - cmake -DSPIRV_BUILD_COMPRESSION=ON ..
-  - cmake --build . --config %CONFIGURATION%
+  - cmake -DSPIRV_BUILD_COMPRESSION=ON -DCMAKE_INSTALL_PREFIX=install ..
+  - cmake --build . --config %CONFIGURATION% --target install
 
 test_script:
   - ctest -C %CONFIGURATION% --output-on-failure --timeout 300
+
+after_test:
+  - cd install
+  - 7z a SPIRV-Tools-master-windows-"%PLATFORM%"-"%CONFIGURATION%".zip *\*
+
+artifacts:
+  - path: build\install\*.zip
+    name: artifacts-zip
+
+deploy:
+  - provider: GitHub
+    auth_token:
+      secure: 9M8jpojrC0ya3xuxksd/+fioOjhlkN6Sl/xuycv9K6uHok3Vj/JDCAbBJaIRQrlc
+    release: master-tot
+    description: "Continuous build of the latest master branch by Appveyor and Travis CI"
+    artifact: artifacts-zip
+    draft: false
+    prerelease: false
+    force_update: true
+    on:
+      branch: master
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
