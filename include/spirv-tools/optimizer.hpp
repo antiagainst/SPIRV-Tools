@@ -15,6 +15,7 @@
 #ifndef INCLUDE_SPIRV_TOOLS_OPTIMIZER_HPP_
 #define INCLUDE_SPIRV_TOOLS_OPTIMIZER_HPP_
 
+#include <cstddef>
 #include <memory>
 #include <ostream>
 #include <string>
@@ -28,6 +29,13 @@ namespace spvtools {
 namespace opt {
 class Pass;
 }
+
+struct Allocator {
+  void* (*allocate)(Allocator*, std::size_t size, std::size_t align);
+  void (*deallocate)(Allocator*, void* ptr, std::size_t size);
+
+  void* internals;
+};
 
 // C++ interface for SPIR-V optimization functionalities. It wraps the context
 // (including target environment and the corresponding SPIR-V grammar) and
@@ -78,6 +86,8 @@ class Optimizer {
 
   // Destructs this instance.
   ~Optimizer();
+
+  void SetAllocator(Allocator* allocator);
 
   // Sets the message consumer to the given |consumer|. The |consumer| will be
   // invoked once for each message communicated from the library.

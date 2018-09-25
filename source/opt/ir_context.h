@@ -20,12 +20,11 @@
 #include <limits>
 #include <map>
 #include <memory>
-#include <unordered_map>
-#include <unordered_set>
 #include <utility>
 #include <vector>
 
 #include "source/assembly_grammar.h"
+#include "source/opt/allocator.h"
 #include "source/opt/cfg.h"
 #include "source/opt/constants.h"
 #include "source/opt/decoration_manager.h"
@@ -580,14 +579,14 @@ class IRContext {
   //
   // NOTE: Do not traverse this map. Ever. Use the function and basic block
   // iterators to traverse instructions.
-  std::unordered_map<Instruction*, BasicBlock*> instr_to_block_;
+  CAUnorderedMap<Instruction*, BasicBlock*> instr_to_block_;
 
   // A bitset indicating which analyes are currently valid.
   Analysis valid_analyses_;
 
   // Opcodes of shader capability core executable instructions
   // without side-effect.
-  std::unordered_map<uint32_t, std::unordered_set<uint32_t>> combinator_ops_;
+  CAUnorderedMap<uint32_t, CAUnorderedSet<uint32_t>> combinator_ops_;
 
   // The CFG for all the functions in |module_|.
   std::unique_ptr<CFG> cfg_;
@@ -598,7 +597,7 @@ class IRContext {
   std::map<const Function*, PostDominatorAnalysis> post_dominator_trees_;
 
   // Cache of loop descriptors for each function.
-  std::unordered_map<const Function*, LoopDescriptor> loop_descriptors_;
+  CAUnorderedMap<const Function*, LoopDescriptor> loop_descriptors_;
 
   // Constant manager for |module_|.
   std::unique_ptr<analysis::ConstantManager> constant_mgr_;

@@ -17,6 +17,7 @@
 #include <cstring>
 
 #include "source/latest_version_glsl_std_450_header.h"
+#include "source/opt/allocator.h"
 #include "source/opt/log.h"
 #include "source/opt/mem_pass.h"
 #include "source/opt/reflect.h"
@@ -258,8 +259,7 @@ void IRContext::AnalyzeUses(Instruction* inst) {
 }
 
 void IRContext::KillNamesAndDecorates(uint32_t id) {
-  std::vector<Instruction*> decorations =
-      get_decoration_mgr()->GetDecorationsFor(id, true);
+  auto decorations = get_decoration_mgr()->GetDecorationsFor(id, true);
 
   for (Instruction* inst : decorations) {
     KillInst(inst);
@@ -563,8 +563,7 @@ LoopDescriptor* IRContext::GetLoopDescriptor(const Function* f) {
     ResetLoopAnalysis();
   }
 
-  std::unordered_map<const Function*, LoopDescriptor>::iterator it =
-      loop_descriptors_.find(f);
+  auto it = loop_descriptors_.find(f);
   if (it == loop_descriptors_.end()) {
     return &loop_descriptors_
                 .emplace(std::make_pair(f, LoopDescriptor(this, f)))
@@ -601,7 +600,7 @@ PostDominatorAnalysis* IRContext::GetPostDominatorAnalysis(const Function* f) {
 }
 
 bool IRContext::CheckCFG() {
-  std::unordered_map<uint32_t, std::vector<uint32_t>> real_preds;
+  CAUnorderedMap<uint32_t, std::vector<uint32_t>> real_preds;
   if (!AreAnalysesValid(kAnalysisCFG)) {
     return true;
   }
