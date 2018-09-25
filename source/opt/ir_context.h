@@ -593,8 +593,8 @@ class IRContext {
 
   // Each function in the module will create its own dominator tree. We cache
   // the result so it doesn't need to be rebuilt each time.
-  std::map<const Function*, DominatorAnalysis> dominator_trees_;
-  std::map<const Function*, PostDominatorAnalysis> post_dominator_trees_;
+  CAMap<const Function*, DominatorAnalysis> dominator_trees_;
+  CAMap<const Function*, PostDominatorAnalysis> post_dominator_trees_;
 
   // Cache of loop descriptors for each function.
   CAUnorderedMap<const Function*, LoopDescriptor> loop_descriptors_;

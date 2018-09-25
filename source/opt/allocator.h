@@ -17,6 +17,7 @@
 
 #include <cstddef>
 #include <limits>
+#include <map>
 #include <set>
 #include <unordered_map>
 #include <unordered_set>
@@ -90,6 +91,9 @@ struct StlAllocator {
 template <class T>
 using CAVector = std::vector<T, StlAllocator<T>>;
 */
+
+template <class Key, class T, class Compare = std::less<Key>>
+using CAMap = std::map<Key, T, Compare, StlAllocator<std::pair<Key, T>>>;
 
 template <class Key, class T, class Hash = std::hash<Key>,
           class KeyEqual = std::equal_to<Key>>
