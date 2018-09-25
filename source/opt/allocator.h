@@ -18,6 +18,7 @@
 #include <cstddef>
 #include <limits>
 #include <map>
+#include <memory>
 #include <set>
 #include <unordered_map>
 #include <unordered_set>
@@ -87,10 +88,19 @@ struct StlAllocator {
   }
 };
 
-/*
 template <class T>
-using CAVector = std::vector<T, StlAllocator<T>>;
-*/
+struct CADeleter {
+  void operator()(T* ptr) { FallbackableCustomDeallocate(ptr, sizeof(T)); }
+};
+
+template <class T>
+using CAUniquePtr = std::unique_ptr<T, CADeleter<T>>;
+
+template <typename T, typename... Args>
+CAUniquePtr<T> CAMakeUnique(Args&&... args) {
+  auto* p = FallbackableCustomAllocate(sizeof(T));
+  return CAUniquePtr<T>(new (p) T(std::forward<Args>(args)...));
+}
 
 template <class Key, class T, class Compare = std::less<Key>>
 using CAMap = std::map<Key, T, Compare, StlAllocator<std::pair<Key, T>>>;
