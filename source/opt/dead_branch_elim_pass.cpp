@@ -55,9 +55,7 @@ bool DeadBranchElimPass::GetConstCondition(uint32_t condId, bool* condVal) {
           GetConstCondition(cInst->GetSingleWordInOperand(0), &negVal);
       if (condIsConst) *condVal = !negVal;
     } break;
-    default: {
-      condIsConst = false;
-    } break;
+    default: { condIsConst = false; } break;
   }
   return condIsConst;
 }
@@ -81,9 +79,10 @@ bool DeadBranchElimPass::GetConstInteger(uint32_t selId, uint32_t* selVal) {
 
 void DeadBranchElimPass::AddBranch(uint32_t labelId, BasicBlock* bp) {
   assert(get_def_use_mgr()->GetDef(labelId) != nullptr);
-  std::unique_ptr<Instruction> newBranch(
-      new Instruction(context(), SpvOpBranch, 0, 0,
-                      {{spv_operand_type_t::SPV_OPERAND_TYPE_ID, {labelId}}}));
+  auto newBranch = CAMakeUnique<Instruction>(
+      context(), SpvOpBranch, 0, 0,
+      std::initializer_list<Operand>{
+          {spv_operand_type_t::SPV_OPERAND_TYPE_ID, {labelId}}});
   context()->AnalyzeDefUse(&*newBranch);
   context()->set_instr_block(&*newBranch, bp);
   bp->AddInstruction(std::move(newBranch));
@@ -171,7 +170,7 @@ bool DeadBranchElimPass::MarkLiveBlocks(
           context()->KillInst(mergeInst);
         } else {
           mergeInst->RemoveFromList();
-          first_break->InsertBefore(std::unique_ptr<Instruction>(mergeInst));
+          first_break->InsertBefore(CAUniquePtr<Instruction>(mergeInst));
           context()->set_instr_block(mergeInst,
                                      context()->get_instr_block(first_break));
         }
@@ -331,8 +330,8 @@ bool DeadBranchElimPass::EraseDeadBlocks(
         KillAllInsts(&*ebi, false);
         // Add unreachable terminator.
         ebi->AddInstruction(
-            MakeUnique<Instruction>(context(), SpvOpUnreachable, 0, 0,
-                                    std::initializer_list<Operand>{}));
+            CAMakeUnique<Instruction>(context(), SpvOpUnreachable, 0, 0,
+                                      std::initializer_list<Operand>{}));
         context()->set_instr_block(&*ebi->tail(), &*ebi);
         modified = true;
       }
@@ -346,7 +345,7 @@ bool DeadBranchElimPass::EraseDeadBlocks(
         KillAllInsts(&*ebi, false);
         // Add unconditional branch to header.
         assert(unreachable_continues.count(&*ebi));
-        ebi->AddInstruction(MakeUnique<Instruction>(
+        ebi->AddInstruction(CAMakeUnique<Instruction>(
             context(), SpvOpBranch, 0, 0,
             std::initializer_list<Operand>{{SPV_OPERAND_TYPE_ID, {cont_id}}}));
         get_def_use_mgr()->AnalyzeInstUse(&*ebi->tail());

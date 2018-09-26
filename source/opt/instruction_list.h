@@ -1,4 +1,3 @@
-
 // Copyright (c) 2017 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,6 +23,7 @@
 
 #include "source/latest_version_spirv_header.h"
 #include "source/operand.h"
+#include "source/opt/allocator.h"
 #include "source/opt/instruction.h"
 #include "source/util/ilist.h"
 #include "spirv-tools/libspirv.h"
@@ -39,7 +39,7 @@ namespace opt {
 // pointers to instruction, ownership should probably be moved to the module.
 // Because of that I have not made the ownership passing in this class fully
 // explicit.  For example, RemoveFromList takes ownership from the list, but
-// does not return an std::unique_ptr to signal that.  When we fully decide on
+// does not return an unique ptr  to signal that.  When we fully decide on
 // ownership, this will have to be fixed up one way or the other.
 class InstructionList : public utils::IntrusiveList<Instruction> {
  public:
@@ -68,12 +68,12 @@ class InstructionList : public utils::IntrusiveList<Instruction> {
     // by the iterator.  The return value will be an iterator pointing to the
     // first of the newly inserted elements.  Ownership of the elements in
     // |list| is now passed on to |*this|.
-    iterator InsertBefore(std::vector<std::unique_ptr<Instruction>>&& list);
+    iterator InsertBefore(std::vector<CAUniquePtr<Instruction>>&& list);
 
     // The node |i| will be inserted immediately before |this|. The return value
     // will be an iterator pointing to the newly inserted node.  The owner of
     // |*i| becomes |*this|
-    iterator InsertBefore(std::unique_ptr<Instruction>&& i);
+    iterator InsertBefore(CAUniquePtr<Instruction>&& i);
 
     // Removes the node from the list, and deletes the storage.  Returns a valid
     // iterator to the next node.
@@ -95,7 +95,7 @@ class InstructionList : public utils::IntrusiveList<Instruction> {
     return utils::IntrusiveList<Instruction>::end();
   }
 
-  void push_back(std::unique_ptr<Instruction>&& inst) {
+  void push_back(CAUniquePtr<Instruction>&& inst) {
     utils::IntrusiveList<Instruction>::push_back(inst.release());
   }
 

@@ -63,11 +63,12 @@ class InstructionBuilder {
   Instruction* AddSelectionMerge(
       uint32_t merge_id,
       uint32_t selection_control = SpvSelectionControlMaskNone) {
-    std::unique_ptr<Instruction> new_branch_merge(new Instruction(
+    auto new_branch_merge = CAMakeUnique<Instruction>(
         GetContext(), SpvOpSelectionMerge, 0, 0,
-        {{spv_operand_type_t::SPV_OPERAND_TYPE_ID, {merge_id}},
-         {spv_operand_type_t::SPV_OPERAND_TYPE_SELECTION_CONTROL,
-          {selection_control}}}));
+        std::initializer_list<Operand>{
+            {spv_operand_type_t::SPV_OPERAND_TYPE_ID, {merge_id}},
+            {spv_operand_type_t::SPV_OPERAND_TYPE_SELECTION_CONTROL,
+             {selection_control}}});
     return AddInstruction(std::move(new_branch_merge));
   }
 
@@ -77,11 +78,13 @@ class InstructionBuilder {
   // |loop_control| are the loop control flags to be added to the instruction.
   Instruction* AddLoopMerge(uint32_t merge_id, uint32_t continue_id,
                             uint32_t loop_control = SpvLoopControlMaskNone) {
-    std::unique_ptr<Instruction> new_branch_merge(new Instruction(
+    auto new_branch_merge = CAMakeUnique<Instruction>(
         GetContext(), SpvOpLoopMerge, 0, 0,
-        {{spv_operand_type_t::SPV_OPERAND_TYPE_ID, {merge_id}},
-         {spv_operand_type_t::SPV_OPERAND_TYPE_ID, {continue_id}},
-         {spv_operand_type_t::SPV_OPERAND_TYPE_LOOP_CONTROL, {loop_control}}}));
+        std::initializer_list<Operand>{
+            {spv_operand_type_t::SPV_OPERAND_TYPE_ID, {merge_id}},
+            {spv_operand_type_t::SPV_OPERAND_TYPE_ID, {continue_id}},
+            {spv_operand_type_t::SPV_OPERAND_TYPE_LOOP_CONTROL,
+             {loop_control}}});
     return AddInstruction(std::move(new_branch_merge));
   }
 
@@ -89,9 +92,10 @@ class InstructionBuilder {
   // Note that the user must make sure the final basic block is
   // well formed.
   Instruction* AddBranch(uint32_t label_id) {
-    std::unique_ptr<Instruction> new_branch(new Instruction(
+    auto new_branch = CAMakeUnique<Instruction>(
         GetContext(), SpvOpBranch, 0, 0,
-        {{spv_operand_type_t::SPV_OPERAND_TYPE_ID, {label_id}}}));
+        std::initializer_list<Operand>{
+            {spv_operand_type_t::SPV_OPERAND_TYPE_ID, {label_id}}});
     return AddInstruction(std::move(new_branch));
   }
 
@@ -117,11 +121,12 @@ class InstructionBuilder {
     if (merge_id != kInvalidId) {
       AddSelectionMerge(merge_id, selection_control);
     }
-    std::unique_ptr<Instruction> new_branch(new Instruction(
+    auto new_branch = CAMakeUnique<Instruction>(
         GetContext(), SpvOpBranchConditional, 0, 0,
-        {{spv_operand_type_t::SPV_OPERAND_TYPE_ID, {cond_id}},
-         {spv_operand_type_t::SPV_OPERAND_TYPE_ID, {true_id}},
-         {spv_operand_type_t::SPV_OPERAND_TYPE_ID, {false_id}}}));
+        std::initializer_list<Operand>{
+            {spv_operand_type_t::SPV_OPERAND_TYPE_ID, {cond_id}},
+            {spv_operand_type_t::SPV_OPERAND_TYPE_ID, {true_id}},
+            {spv_operand_type_t::SPV_OPERAND_TYPE_ID, {false_id}}});
     return AddInstruction(std::move(new_branch));
   }
 
@@ -158,8 +163,8 @@ class InstructionBuilder {
       operands.emplace_back(
           Operand{spv_operand_type_t::SPV_OPERAND_TYPE_ID, {target.second}});
     }
-    std::unique_ptr<Instruction> new_switch(
-        new Instruction(GetContext(), SpvOpSwitch, 0, 0, operands));
+    auto new_switch =
+        CAMakeUnique<Instruction>(GetContext(), SpvOpSwitch, 0, 0, operands);
     return AddInstruction(std::move(new_switch));
   }
 
@@ -173,8 +178,8 @@ class InstructionBuilder {
     for (size_t i = 0; i < incomings.size(); i++) {
       phi_ops.push_back({SPV_OPERAND_TYPE_ID, {incomings[i]}});
     }
-    std::unique_ptr<Instruction> phi_inst(new Instruction(
-        GetContext(), SpvOpPhi, type, GetContext()->TakeNextId(), phi_ops));
+    auto phi_inst = CAMakeUnique<Instruction>(
+        GetContext(), SpvOpPhi, type, GetContext()->TakeNextId(), phi_ops);
     return AddInstruction(std::move(phi_inst));
   }
 
@@ -184,9 +189,10 @@ class InstructionBuilder {
   // The id |op1| is the left hand side of the operation.
   // The id |op2| is the right hand side of the operation.
   Instruction* AddIAdd(uint32_t type, uint32_t op1, uint32_t op2) {
-    std::unique_ptr<Instruction> inst(new Instruction(
+    auto inst = CAMakeUnique<Instruction>(
         GetContext(), SpvOpIAdd, type, GetContext()->TakeNextId(),
-        {{SPV_OPERAND_TYPE_ID, {op1}}, {SPV_OPERAND_TYPE_ID, {op2}}}));
+        std::initializer_list<Operand>{{SPV_OPERAND_TYPE_ID, {op1}},
+                                       {SPV_OPERAND_TYPE_ID, {op2}}});
     return AddInstruction(std::move(inst));
   }
 
@@ -197,9 +203,10 @@ class InstructionBuilder {
   Instruction* AddULessThan(uint32_t op1, uint32_t op2) {
     analysis::Bool bool_type;
     uint32_t type = GetContext()->get_type_mgr()->GetId(&bool_type);
-    std::unique_ptr<Instruction> inst(new Instruction(
+    auto inst = CAMakeUnique<Instruction>(
         GetContext(), SpvOpULessThan, type, GetContext()->TakeNextId(),
-        {{SPV_OPERAND_TYPE_ID, {op1}}, {SPV_OPERAND_TYPE_ID, {op2}}}));
+        std::initializer_list<Operand>{{SPV_OPERAND_TYPE_ID, {op1}},
+                                       {SPV_OPERAND_TYPE_ID, {op2}}});
     return AddInstruction(std::move(inst));
   }
 
@@ -210,9 +217,10 @@ class InstructionBuilder {
   Instruction* AddSLessThan(uint32_t op1, uint32_t op2) {
     analysis::Bool bool_type;
     uint32_t type = GetContext()->get_type_mgr()->GetId(&bool_type);
-    std::unique_ptr<Instruction> inst(new Instruction(
+    auto inst = CAMakeUnique<Instruction>(
         GetContext(), SpvOpSLessThan, type, GetContext()->TakeNextId(),
-        {{SPV_OPERAND_TYPE_ID, {op1}}, {SPV_OPERAND_TYPE_ID, {op2}}}));
+        std::initializer_list<Operand>{{SPV_OPERAND_TYPE_ID, {op1}},
+                                       {SPV_OPERAND_TYPE_ID, {op2}}});
     return AddInstruction(std::move(inst));
   }
 
@@ -239,11 +247,11 @@ class InstructionBuilder {
   // bool) for |type|.
   Instruction* AddSelect(uint32_t type, uint32_t cond, uint32_t true_value,
                          uint32_t false_value) {
-    std::unique_ptr<Instruction> select(new Instruction(
+    auto select = CAMakeUnique<Instruction>(
         GetContext(), SpvOpSelect, type, GetContext()->TakeNextId(),
         std::initializer_list<Operand>{{SPV_OPERAND_TYPE_ID, {cond}},
                                        {SPV_OPERAND_TYPE_ID, {true_value}},
-                                       {SPV_OPERAND_TYPE_ID, {false_value}}}));
+                                       {SPV_OPERAND_TYPE_ID, {false_value}}});
     return AddInstruction(std::move(select));
   }
 
@@ -263,9 +271,9 @@ class InstructionBuilder {
       ops.emplace_back(SPV_OPERAND_TYPE_ID,
                        std::initializer_list<uint32_t>{id});
     }
-    std::unique_ptr<Instruction> construct(
-        new Instruction(GetContext(), SpvOpCompositeConstruct, type,
-                        GetContext()->TakeNextId(), ops));
+    auto construct =
+        CAMakeUnique<Instruction>(GetContext(), SpvOpCompositeConstruct, type,
+                                  GetContext()->TakeNextId(), ops);
     return AddInstruction(std::move(construct));
   }
   // Adds an unsigned int32 constant to the binary.
@@ -319,17 +327,16 @@ class InstructionBuilder {
       operands.push_back({SPV_OPERAND_TYPE_LITERAL_INTEGER, {index}});
     }
 
-    std::unique_ptr<Instruction> new_inst(
-        new Instruction(GetContext(), SpvOpCompositeExtract, type,
-                        GetContext()->TakeNextId(), operands));
+    auto new_inst =
+        CAMakeUnique<Instruction>(GetContext(), SpvOpCompositeExtract, type,
+                                  GetContext()->TakeNextId(), operands);
     return AddInstruction(std::move(new_inst));
   }
 
   // Creates an unreachable instruction.
   Instruction* AddUnreachable() {
-    std::unique_ptr<Instruction> select(
-        new Instruction(GetContext(), SpvOpUnreachable, 0, 0,
-                        std::initializer_list<Operand>{}));
+    auto select = CAMakeUnique<Instruction>(
+        GetContext(), SpvOpUnreachable, 0, 0, std::initializer_list<Operand>{});
     return AddInstruction(std::move(select));
   }
 
@@ -342,9 +349,9 @@ class InstructionBuilder {
       operands.push_back({SPV_OPERAND_TYPE_ID, {index_id}});
     }
 
-    std::unique_ptr<Instruction> new_inst(
-        new Instruction(GetContext(), SpvOpAccessChain, type_id,
-                        GetContext()->TakeNextId(), operands));
+    auto new_inst =
+        CAMakeUnique<Instruction>(GetContext(), SpvOpAccessChain, type_id,
+                                  GetContext()->TakeNextId(), operands);
     return AddInstruction(std::move(new_inst));
   }
 
@@ -352,14 +359,13 @@ class InstructionBuilder {
     std::vector<Operand> operands;
     operands.push_back({SPV_OPERAND_TYPE_ID, {base_ptr_id}});
 
-    std::unique_ptr<Instruction> new_inst(
-        new Instruction(GetContext(), SpvOpLoad, type_id,
-                        GetContext()->TakeNextId(), operands));
+    auto new_inst = CAMakeUnique<Instruction>(
+        GetContext(), SpvOpLoad, type_id, GetContext()->TakeNextId(), operands);
     return AddInstruction(std::move(new_inst));
   }
 
   // Inserts the new instruction before the insertion point.
-  Instruction* AddInstruction(std::unique_ptr<Instruction>&& insn) {
+  Instruction* AddInstruction(CAUniquePtr<Instruction>&& insn) {
     Instruction* insn_ptr = &*insert_before_.InsertBefore(std::move(insn));
     UpdateInstrToBlockMapping(insn_ptr);
     UpdateDefUseMgr(insn_ptr);

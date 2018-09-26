@@ -279,7 +279,7 @@ Instruction* FoldSpecConstantOpAndCompositePass::DoVectorShuffle(
            "Literal index out of bound of the concatenated vector");
     selected_components.push_back(concatenated_components[literal]);
   }
-  auto new_vec_const = MakeUnique<analysis::VectorConstant>(
+  auto new_vec_const = CAMakeUnique<analysis::VectorConstant>(
       result_vec_type, selected_components);
   auto reg_vec_const =
       context()->get_constant_mgr()->RegisterConstant(std::move(new_vec_const));
@@ -367,7 +367,7 @@ Instruction* FoldSpecConstantOpAndCompositePass::DoComponentWiseOperation(
         assert(false && "Failed to create constants with 32-bit word");
       }
     }
-    auto new_vec_const = MakeUnique<analysis::VectorConstant>(
+    auto new_vec_const = CAMakeUnique<analysis::VectorConstant>(
         result_type->AsVector(), result_vector_components);
     auto reg_vec_const = context()->get_constant_mgr()->RegisterConstant(
         std::move(new_vec_const));

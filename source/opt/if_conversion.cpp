@@ -243,7 +243,7 @@ void IfConversion::HoistInstruction(Instruction* inst, BasicBlock* target_block,
     insertion_pos = insertion_pos->PreviousNode();
   }
   inst->RemoveFromList();
-  insertion_pos->InsertBefore(std::unique_ptr<Instruction>(inst));
+  insertion_pos->InsertBefore(CAUniquePtr<Instruction>(inst));
   context()->set_instr_block(inst, target_block);
 }
 

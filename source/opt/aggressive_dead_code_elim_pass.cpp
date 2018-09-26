@@ -22,6 +22,7 @@
 
 #include "source/cfa.h"
 #include "source/latest_version_glsl_std_450_header.h"
+#include "source/opt/allocator.h"
 #include "source/opt/iterator.h"
 #include "source/opt/reflect.h"
 
@@ -236,9 +237,10 @@ void AggressiveDCEPass::ComputeBlock2HeaderMaps(
 }
 
 void AggressiveDCEPass::AddBranch(uint32_t labelId, BasicBlock* bp) {
-  std::unique_ptr<Instruction> newBranch(
-      new Instruction(context(), SpvOpBranch, 0, 0,
-                      {{spv_operand_type_t::SPV_OPERAND_TYPE_ID, {labelId}}}));
+  auto newBranch = CAMakeUnique<Instruction>(
+      context(), SpvOpBranch, 0, 0,
+      Instruction::OperandList{
+          {spv_operand_type_t::SPV_OPERAND_TYPE_ID, {labelId}}});
   context()->AnalyzeDefUse(&*newBranch);
   context()->set_instr_block(&*newBranch, bp);
   bp->AddInstruction(std::move(newBranch));

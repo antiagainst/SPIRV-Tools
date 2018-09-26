@@ -207,8 +207,8 @@ Instruction* CommonUniformElimPass::ReplaceAndDeleteLoad(Instruction* loadInst,
 }
 
 void CommonUniformElimPass::GenACLoadRepl(
-    const Instruction* ptrInst,
-    std::vector<std::unique_ptr<Instruction>>* newInsts, uint32_t* resultId) {
+    const Instruction* ptrInst, std::vector<CAUniquePtr<Instruction>>* newInsts,
+    uint32_t* resultId) {
   // Build and append Load
   const uint32_t ldResultId = TakeNextId();
   const uint32_t varId =
@@ -219,8 +219,8 @@ void CommonUniformElimPass::GenACLoadRepl(
   std::vector<Operand> load_in_operands;
   load_in_operands.push_back(Operand(spv_operand_type_t::SPV_OPERAND_TYPE_ID,
                                      std::initializer_list<uint32_t>{varId}));
-  std::unique_ptr<Instruction> newLoad(new Instruction(
-      context(), SpvOpLoad, varPteTypeId, ldResultId, load_in_operands));
+  auto newLoad = CAMakeUnique<Instruction>(context(), SpvOpLoad, varPteTypeId,
+                                           ldResultId, load_in_operands);
   get_def_use_mgr()->AnalyzeInstDefUse(&*newLoad);
   newInsts->emplace_back(std::move(newLoad));
 
@@ -241,9 +241,9 @@ void CommonUniformElimPass::GenACLoadRepl(
     }
     ++iidIdx;
   });
-  std::unique_ptr<Instruction> newExt(
-      new Instruction(context(), SpvOpCompositeExtract, ptrPteTypeId,
-                      extResultId, ext_in_opnds));
+  auto newExt =
+      CAMakeUnique<Instruction>(context(), SpvOpCompositeExtract, ptrPteTypeId,
+                                extResultId, ext_in_opnds);
   get_def_use_mgr()->AnalyzeInstDefUse(&*newExt);
   newInsts->emplace_back(std::move(newExt));
   *resultId = extResultId;
@@ -278,7 +278,7 @@ bool CommonUniformElimPass::UniformAccessChainConvert(Function* func) {
       if (HasUnsupportedDecorates(ptrInst->result_id())) continue;
       if (IsVolatileLoad(*inst)) continue;
       if (IsAccessChainToVolatileStructType(*ptrInst)) continue;
-      std::vector<std::unique_ptr<Instruction>> newInsts;
+      std::vector<CAUniquePtr<Instruction>> newInsts;
       uint32_t replId;
       GenACLoadRepl(ptrInst, &newInsts, &replId);
       inst = ReplaceAndDeleteLoad(inst, replId, ptrInst);
@@ -380,9 +380,10 @@ bool CommonUniformElimPass::CommonUniformLoadElimination(Function* func) {
         } else {
           // Copy load into most recent dominating block and remember it
           replId = TakeNextId();
-          std::unique_ptr<Instruction> newLoad(new Instruction(
+          auto newLoad = CAMakeUnique<Instruction>(
               context(), SpvOpLoad, inst->type_id(), replId,
-              {{spv_operand_type_t::SPV_OPERAND_TYPE_ID, {varId}}}));
+              std::initializer_list<Operand>{
+                  {spv_operand_type_t::SPV_OPERAND_TYPE_ID, {varId}}});
           get_def_use_mgr()->AnalyzeInstDefUse(&*newLoad);
           insertItr = insertItr.InsertBefore(std::move(newLoad));
           ++insertItr;
@@ -452,8 +453,7 @@ bool CommonUniformElimPass::CommonExtractElimination(Function* func) {
       for (auto idxItr : cItr->second) {
         if (idxItr.second.size() < 2) continue;
         uint32_t replId = TakeNextId();
-        std::unique_ptr<Instruction> newExtract(
-            idxItr.second.front()->Clone(context()));
+        auto newExtract = idxItr.second.front()->Clone(context());
         newExtract->SetResultId(replId);
         get_def_use_mgr()->AnalyzeInstDefUse(&*newExtract);
         ++ii;

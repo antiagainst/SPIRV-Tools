@@ -22,12 +22,14 @@
 #include <utility>
 #include <vector>
 
+#include "source/opt/allocator.h"
+
 namespace spvtools {
 namespace opt {
 
-// An ad hoc iterator class for std::vector<std::unique_ptr<|ValueType|>>. The
+// An ad hoc iterator class for std::vector<CAUniquePtr<|ValueType|>>. The
 // purpose of this iterator class is to provide transparent access to those
-// std::unique_ptr managed elements in the vector, behaving like we are using
+// CAUniquePtr managed elements in the vector, behaving like we are using
 // std::vector<|ValueType|>.
 template <typename ValueType, bool IsConst = false>
 class UptrVectorIterator
@@ -44,7 +46,7 @@ class UptrVectorIterator
   using difference_type = typename super::difference_type;
 
   // Type aliases. We need to apply constness properly if |IsConst| is true.
-  using Uptr = std::unique_ptr<ValueType>;
+  using Uptr = CAUniquePtr<ValueType>;
   using UptrVector = typename std::conditional<IsConst, const std::vector<Uptr>,
                                                std::vector<Uptr>>::type;
   using UnderlyingIterator =
@@ -153,7 +155,7 @@ inline IteratorRange<IteratorType> make_range(IteratorType&& begin,
 template <typename ValueType,
           class IteratorType = UptrVectorIterator<ValueType>>
 inline IteratorRange<IteratorType> make_range(
-    std::vector<std::unique_ptr<ValueType>>& container) {
+    std::vector<CAUniquePtr<ValueType>>& container) {
   return {IteratorType(&container, container.begin()),
           IteratorType(&container, container.end())};
 }
@@ -162,7 +164,7 @@ inline IteratorRange<IteratorType> make_range(
 template <typename ValueType,
           class IteratorType = UptrVectorIterator<ValueType, true>>
 inline IteratorRange<IteratorType> make_const_range(
-    const std::vector<std::unique_ptr<ValueType>>& container) {
+    const std::vector<CAUniquePtr<ValueType>>& container) {
   return {IteratorType(&container, container.cbegin()),
           IteratorType(&container, container.cend())};
 }

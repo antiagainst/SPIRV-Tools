@@ -1560,7 +1560,7 @@ FoldingRule FMixFeedingExtract() {
 
     // Get the |a| for the FMix instruction.
     uint32_t a_id = composite_inst->GetSingleWordInOperand(kFMixAIdInIdx);
-    std::unique_ptr<Instruction> a(inst->Clone(context));
+    auto a = inst->Clone(context);
     a->SetInOperand(kExtractCompositeIdInIdx, {a_id});
     context->get_instruction_folder().FoldInstruction(a.get());
 

@@ -17,11 +17,10 @@
 
 #include <algorithm>
 #include <cstdint>
-#include <map>
-#include <memory>
 #include <utility>
 #include <vector>
 
+#include "source/opt/allocator.h"
 #include "source/opt/basic_block.h"
 #include "source/opt/dominator_analysis.h"
 #include "source/opt/module.h"
@@ -516,7 +515,7 @@ class LoopDescriptor {
 
   // Adds the loop |new_loop| and all its nested loops to the descriptor set.
   // The object takes ownership of all the loops.
-  Loop* AddLoopNest(std::unique_ptr<Loop> new_loop);
+  Loop* AddLoopNest(CAUniquePtr<Loop> new_loop);
 
   // Remove the loop |loop|.
   void RemoveLoop(Loop* loop);

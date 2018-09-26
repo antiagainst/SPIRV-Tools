@@ -350,9 +350,10 @@ void LoopUtils::CreateLoopDedicatedExits() {
     assert(insert_pt != function->end() && "Basic Block not found");
 
     // Create the dedicate exit basic block.
-    BasicBlock& exit = *insert_pt.InsertBefore(std::unique_ptr<BasicBlock>(
-        new BasicBlock(std::unique_ptr<Instruction>(new Instruction(
-            context_, SpvOpLabel, 0, context_->TakeNextId(), {})))));
+    BasicBlock& exit = *insert_pt.InsertBefore(
+        CAMakeUnique<BasicBlock>(CAMakeUnique<Instruction>(
+            context_, SpvOpLabel, 0, context_->TakeNextId(),
+            std::initializer_list<Operand>{})));
     exit.SetParent(function);
 
     // Redirect in loop predecessors to |exit| block.
@@ -489,9 +490,10 @@ Loop* LoopUtils::CloneAndAttachLoopToHeader(LoopCloningResult* cloning_result) {
   Loop* new_loop = CloneLoop(cloning_result);
 
   // Create a new exit block/label for the new loop.
-  std::unique_ptr<Instruction> new_label{new Instruction(
-      context_, SpvOp::SpvOpLabel, 0, context_->TakeNextId(), {})};
-  std::unique_ptr<BasicBlock> new_exit_bb{new BasicBlock(std::move(new_label))};
+  auto new_label = CAMakeUnique<Instruction>(context_, SpvOp::SpvOpLabel, 0,
+                                             context_->TakeNextId(),
+                                             std::initializer_list<Operand>{});
+  auto new_exit_bb = CAMakeUnique<BasicBlock>(std::move(new_label));
   new_exit_bb->SetParent(loop_->GetMergeBlock()->GetParent());
 
   // Create an unconditional branch to the header block.
@@ -504,7 +506,7 @@ Loop* LoopUtils::CloneAndAttachLoopToHeader(LoopCloningResult* cloning_result) {
 
   // Replace the uses of the old merge block in the new loop with the new merge
   // block.
-  for (std::unique_ptr<BasicBlock>& basic_block : cloning_result->cloned_bb_) {
+  for (CAUniquePtr<BasicBlock>& basic_block : cloning_result->cloned_bb_) {
     for (Instruction& inst : *basic_block) {
       // For each operand in each instruction check if it is using the old merge
       // block and change it to be the new merge block.
@@ -547,7 +549,7 @@ Loop* LoopUtils::CloneLoop(
     const std::vector<BasicBlock*>& ordered_loop_blocks) const {
   analysis::DefUseManager* def_use_mgr = context_->get_def_use_mgr();
 
-  std::unique_ptr<Loop> new_loop = MakeUnique<Loop>(context_);
+  auto new_loop = CAMakeUnique<Loop>(context_);
 
   CFG& cfg = *context_->cfg();
 
@@ -555,12 +557,13 @@ Loop* LoopUtils::CloneLoop(
   for (BasicBlock* old_bb : ordered_loop_blocks) {
     // For each basic block in the loop, we clone it and register the mapping
     // between old and new ids.
-    BasicBlock* new_bb = old_bb->Clone(context_);
+    auto new_bb_owned = old_bb->Clone(context_);
+    BasicBlock* new_bb = new_bb_owned.get();
     new_bb->SetParent(&function_);
     new_bb->GetLabelInst()->SetResultId(context_->TakeNextId());
     def_use_mgr->AnalyzeInstDef(new_bb->GetLabelInst());
     context_->set_instr_block(new_bb->GetLabelInst(), new_bb);
-    cloning_result->cloned_bb_.emplace_back(new_bb);
+    cloning_result->cloned_bb_.emplace_back(std::move(new_bb_owned));
 
     cloning_result->old_to_new_bb_[old_bb->id()] = new_bb;
     cloning_result->new_to_old_bb_[new_bb->id()] = old_bb;
@@ -584,7 +587,7 @@ Loop* LoopUtils::CloneLoop(
 
   // All instructions (including all labels) have been cloned,
   // remap instruction operands id with the new ones.
-  for (std::unique_ptr<BasicBlock>& bb_ref : cloning_result->cloned_bb_) {
+  for (CAUniquePtr<BasicBlock>& bb_ref : cloning_result->cloned_bb_) {
     BasicBlock* bb = bb_ref.get();
 
     for (Instruction& insn : *bb) {
@@ -625,7 +628,7 @@ void LoopUtils::PopulateLoopNest(
     PopulateLoopDesc(cloned, &sub_loop, cloning_result);
   }
 
-  loop_desc_->AddLoopNest(std::unique_ptr<Loop>(new_loop));
+  loop_desc_->AddLoopNest(CAUniquePtr<Loop>(new_loop));
 }
 
 // Populates |new_loop| descriptor according to |old_loop|'s one.

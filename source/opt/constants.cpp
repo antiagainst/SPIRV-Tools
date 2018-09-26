@@ -195,31 +195,27 @@ Instruction* ConstantManager::GetDefiningInstruction(
   }
 }
 
-std::unique_ptr<Constant> ConstantManager::CreateConstant(
+CAUniquePtr<Constant> ConstantManager::CreateConstant(
     const Type* type, const std::vector<uint32_t>& literal_words_or_ids) const {
   if (literal_words_or_ids.size() == 0) {
     // Constant declared with OpConstantNull
-    return MakeUnique<NullConstant>(type);
+    return CAMakeUnique<NullConstant>(type);
   } else if (auto* bt = type->AsBool()) {
     assert(literal_words_or_ids.size() == 1 &&
            "Bool constant should be declared with one operand");
-    return MakeUnique<BoolConstant>(bt, literal_words_or_ids.front());
+    return CAMakeUnique<BoolConstant>(bt, literal_words_or_ids.front());
   } else if (auto* it = type->AsInteger()) {
-    return MakeUnique<IntConstant>(it, literal_words_or_ids);
+    return CAMakeUnique<IntConstant>(it, literal_words_or_ids);
   } else if (auto* ft = type->AsFloat()) {
-    return MakeUnique<FloatConstant>(ft, literal_words_or_ids);
+    return CAMakeUnique<FloatConstant>(ft, literal_words_or_ids);
   } else if (auto* vt = type->AsVector()) {
     auto components = GetConstantsFromIds(literal_words_or_ids);
     if (components.empty()) return nullptr;
     // All components of VectorConstant must be of type Bool, Integer or Float.
     if (!std::all_of(components.begin(), components.end(),
                      [](const Constant* c) {
-                       if (c->type()->AsBool() || c->type()->AsInteger() ||
-                           c->type()->AsFloat()) {
-                         return true;
-                       } else {
-                         return false;
-                       }
+                       return (c->type()->AsBool() || c->type()->AsInteger() ||
+                               c->type()->AsFloat());
                      }))
       return nullptr;
     // All components of VectorConstant must be in the same type.
@@ -230,19 +226,19 @@ std::unique_ptr<Constant> ConstantManager::CreateConstant(
                        return false;
                      }))
       return nullptr;
-    return MakeUnique<VectorConstant>(vt, components);
+    return CAMakeUnique<VectorConstant>(vt, components);
   } else if (auto* mt = type->AsMatrix()) {
     auto components = GetConstantsFromIds(literal_words_or_ids);
     if (components.empty()) return nullptr;
-    return MakeUnique<MatrixConstant>(mt, components);
+    return CAMakeUnique<MatrixConstant>(mt, components);
   } else if (auto* st = type->AsStruct()) {
     auto components = GetConstantsFromIds(literal_words_or_ids);
     if (components.empty()) return nullptr;
-    return MakeUnique<StructConstant>(st, components);
+    return CAMakeUnique<StructConstant>(st, components);
   } else if (auto* at = type->AsArray()) {
     auto components = GetConstantsFromIds(literal_words_or_ids);
     if (components.empty()) return nullptr;
-    return MakeUnique<ArrayConstant>(at, components);
+    return CAMakeUnique<ArrayConstant>(at, components);
   } else {
     return nullptr;
   }
@@ -279,26 +275,26 @@ const Constant* ConstantManager::GetConstantFromInst(Instruction* inst) {
   return GetConstant(GetType(inst), literal_words_or_ids);
 }
 
-std::unique_ptr<Instruction> ConstantManager::CreateInstruction(
+CAUniquePtr<Instruction> ConstantManager::CreateInstruction(
     uint32_t id, const Constant* c, uint32_t type_id) const {
   uint32_t type =
       (type_id == 0) ? context()->get_type_mgr()->GetId(c->type()) : type_id;
   if (c->AsNullConstant()) {
-    return MakeUnique<Instruction>(context(), SpvOp::SpvOpConstantNull, type,
-                                   id, std::initializer_list<Operand>{});
+    return CAMakeUnique<Instruction>(context(), SpvOp::SpvOpConstantNull, type,
+                                     id, std::initializer_list<Operand>{});
   } else if (const BoolConstant* bc = c->AsBoolConstant()) {
-    return MakeUnique<Instruction>(
+    return CAMakeUnique<Instruction>(
         context(),
         bc->value() ? SpvOp::SpvOpConstantTrue : SpvOp::SpvOpConstantFalse,
         type, id, std::initializer_list<Operand>{});
   } else if (const IntConstant* ic = c->AsIntConstant()) {
-    return MakeUnique<Instruction>(
+    return CAMakeUnique<Instruction>(
         context(), SpvOp::SpvOpConstant, type, id,
         std::initializer_list<Operand>{
             Operand(spv_operand_type_t::SPV_OPERAND_TYPE_TYPED_LITERAL_NUMBER,
                     ic->words())});
   } else if (const FloatConstant* fc = c->AsFloatConstant()) {
-    return MakeUnique<Instruction>(
+    return CAMakeUnique<Instruction>(
         context(), SpvOp::SpvOpConstant, type, id,
         std::initializer_list<Operand>{
             Operand(spv_operand_type_t::SPV_OPERAND_TYPE_TYPED_LITERAL_NUMBER,
@@ -310,7 +306,7 @@ std::unique_ptr<Instruction> ConstantManager::CreateInstruction(
   }
 }
 
-std::unique_ptr<Instruction> ConstantManager::CreateCompositeInstruction(
+CAUniquePtr<Instruction> ConstantManager::CreateCompositeInstruction(
     uint32_t result_id, const CompositeConstant* cc, uint32_t type_id) const {
   std::vector<Operand> operands;
   Instruction* type_inst = context()->get_def_use_mgr()->GetDef(type_id);
@@ -336,8 +332,8 @@ std::unique_ptr<Instruction> ConstantManager::CreateCompositeInstruction(
   }
   uint32_t type =
       (type_id == 0) ? context()->get_type_mgr()->GetId(cc->type()) : type_id;
-  return MakeUnique<Instruction>(context(), SpvOp::SpvOpConstantComposite, type,
-                                 result_id, std::move(operands));
+  return CAMakeUnique<Instruction>(context(), SpvOp::SpvOpConstantComposite,
+                                   type, result_id, std::move(operands));
 }
 
 const Constant* ConstantManager::GetConstant(

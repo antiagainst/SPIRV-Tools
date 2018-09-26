@@ -48,10 +48,11 @@ bool Workaround1209::RemoveOpUnreachableInLoops() {
           // We found an OpUnreachable inside a loop.
           // Replace it with an unconditional branch to the loop merge.
           context()->KillInst(&*bb->tail());
-          std::unique_ptr<Instruction> new_branch(
-              new Instruction(context(), SpvOpBranch, 0, 0,
-                              {{spv_operand_type_t::SPV_OPERAND_TYPE_ID,
-                                {loop_merges.top()}}}));
+          auto new_branch = CAMakeUnique<Instruction>(
+              context(), SpvOpBranch, 0, 0,
+              std::initializer_list<Operand>{
+                  {spv_operand_type_t::SPV_OPERAND_TYPE_ID,
+                   {loop_merges.top()}}});
           context()->AnalyzeDefUse(&*new_branch);
           bb->AddInstruction(std::move(new_branch));
           modified = true;

@@ -28,8 +28,8 @@ bool InlineExhaustivePass::InlineExhaustive(Function* func) {
     for (auto ii = bi->begin(); ii != bi->end();) {
       if (IsInlinableFunctionCall(&*ii)) {
         // Inline call.
-        std::vector<std::unique_ptr<BasicBlock>> newBlocks;
-        std::vector<std::unique_ptr<Instruction>> newVars;
+        std::vector<CAUniquePtr<BasicBlock>> newBlocks;
+        std::vector<CAUniquePtr<Instruction>> newVars;
         GenInlineCode(&newBlocks, &newVars, ii, bi);
         // If call block is replaced with more than one block, point
         // succeeding phis at new last block.

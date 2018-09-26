@@ -35,10 +35,12 @@ const int kMaxResultId = 0x400000;
 
 CFG::CFG(Module* module)
     : module_(module),
-      pseudo_entry_block_(std::unique_ptr<Instruction>(
-          new Instruction(module->context(), SpvOpLabel, 0, 0, {}))),
-      pseudo_exit_block_(std::unique_ptr<Instruction>(new Instruction(
-          module->context(), SpvOpLabel, 0, kMaxResultId, {}))) {
+      pseudo_entry_block_(
+          CAMakeUnique<Instruction>(module->context(), SpvOpLabel, 0, 0,
+                                    std::initializer_list<Operand>{})),
+      pseudo_exit_block_(CAMakeUnique<Instruction>(
+          module->context(), SpvOpLabel, 0, kMaxResultId,
+          std::initializer_list<Operand>{})) {
   for (auto& fn : *module) {
     for (auto& blk : fn) {
       RegisterBlock(&blk);
@@ -251,7 +253,7 @@ BasicBlock* CFG::SplitLoopHeader(BasicBlock* bb) {
     }
 
     phi->RemoveFromList();
-    std::unique_ptr<Instruction> phi_owner(phi);
+    CAUniquePtr<Instruction> phi_owner(phi);
     phi->SetInOperands(std::move(header_phi_ops));
     new_header->begin()->InsertBefore(std::move(phi_owner));
     context->set_instr_block(phi, new_header);
@@ -262,10 +264,10 @@ BasicBlock* CFG::SplitLoopHeader(BasicBlock* bb) {
   InstructionBuilder branch_builder(
       context, bb,
       IRContext::kAnalysisDefUse | IRContext::kAnalysisInstrToBlockMapping);
-  bb->AddInstruction(
-      MakeUnique<Instruction>(context, SpvOpBranch, 0, 0,
-                              std::initializer_list<Operand>{
-                                  {SPV_OPERAND_TYPE_ID, {new_header->id()}}}));
+  bb->AddInstruction(CAMakeUnique<Instruction>(
+      context, SpvOpBranch, 0, 0,
+      std::initializer_list<Operand>{
+          {SPV_OPERAND_TYPE_ID, {new_header->id()}}}));
   context->AnalyzeUses(bb->terminator());
   context->set_instr_block(bb->terminator(), bb);
   label2preds_[new_header->id()].push_back(bb->id());

@@ -90,6 +90,13 @@ struct StlAllocator {
 
 template <class T>
 struct CADeleter {
+  CADeleter() {}
+
+  // Allows converting from CAUniquePtr<Derived> to CAUniquePtr<Base>
+  template <class U, typename = typename std::enable_if<
+                         std::is_convertible<U*, T*>::value>::type>
+  CADeleter(const CADeleter<U>&) {}
+
   void operator()(T* ptr) { FallbackableCustomDeallocate(ptr, sizeof(T)); }
 };
 
@@ -103,12 +110,13 @@ CAUniquePtr<T> CAMakeUnique(Args&&... args) {
 }
 
 template <class Key, class T, class Compare = std::less<Key>>
-using CAMap = std::map<Key, T, Compare, StlAllocator<std::pair<Key, T>>>;
+using CAMap = std::map<Key, T, Compare, StlAllocator<std::pair<const Key, T>>>;
 
 template <class Key, class T, class Hash = std::hash<Key>,
           class KeyEqual = std::equal_to<Key>>
 using CAUnorderedMap =
-    std::unordered_map<Key, T, Hash, KeyEqual, StlAllocator<std::pair<Key, T>>>;
+    std::unordered_map<Key, T, Hash, KeyEqual,
+                       StlAllocator<std::pair<const Key, T>>>;
 
 template <class Key, class Hash = std::hash<Key>,
           class KeyEqual = std::equal_to<Key>>
@@ -122,7 +130,7 @@ using CASet = std::set<Key, Compare, StlAllocator<Key>>;
 // allocator can be deallocated with another.
 template <class T, class U>
 bool operator==(const StlAllocator<T>&, const StlAllocator<U>&) noexcept {
-  return false;  // For safety
+  return true;  // For safety
 }
 
 template <class T, class U>

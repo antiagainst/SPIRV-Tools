@@ -444,9 +444,9 @@ bool SSARewriter::ApplyReplacements() {
 
     // Generate a new OpPhi instruction and insert it in its basic
     // block.
-    std::unique_ptr<Instruction> phi_inst(
-        new Instruction(pass_->context(), SpvOpPhi, type_id,
-                        phi_candidate->result_id(), phi_operands));
+    auto phi_inst =
+        CAMakeUnique<Instruction>(pass_->context(), SpvOpPhi, type_id,
+                                  phi_candidate->result_id(), phi_operands);
     generated_phis.push_back(phi_inst.get());
     pass_->get_def_use_mgr()->AnalyzeInstDef(&*phi_inst);
     pass_->context()->set_instr_block(&*phi_inst, phi_candidate->bb());

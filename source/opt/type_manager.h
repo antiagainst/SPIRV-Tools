@@ -41,7 +41,7 @@ struct HashTypePointer {
   }
 };
 struct HashTypeUniquePointer {
-  size_t operator()(const std::unique_ptr<Type>& type) const {
+  size_t operator()(const CAUniquePtr<Type>& type) const {
     assert(type);
     return type->HashValue();
   }
@@ -59,8 +59,8 @@ struct CompareTypePointers {
   }
 };
 struct CompareTypeUniquePointers {
-  bool operator()(const std::unique_ptr<Type>& lhs,
-                  const std::unique_ptr<Type>& rhs) const {
+  bool operator()(const CAUniquePtr<Type>& lhs,
+                  const CAUniquePtr<Type>& rhs) const {
     assert(lhs && rhs);
     return lhs->IsSame(rhs.get());
   }
@@ -97,7 +97,7 @@ class TypeManager {
   // Returns a pair of the type and pointer to the type in |sc|.
   //
   // |id| must be a registered type.
-  std::pair<Type*, std::unique_ptr<Pointer>> GetTypeAndPointerType(
+  std::pair<Type*, CAUniquePtr<Pointer>> GetTypeAndPointerType(
       uint32_t id, SpvStorageClass sc) const;
 
   // Returns an id for a declaration representing |type|.
@@ -138,24 +138,25 @@ class TypeManager {
  private:
   using TypeToIdMap = CAUnorderedMap<const Type*, uint32_t, HashTypePointer,
                                      CompareTypePointers>;
-  using TypePool = CAUnorderedSet<std::unique_ptr<Type>, HashTypeUniquePointer,
+  using TypePool = CAUnorderedSet<CAUniquePtr<Type>, HashTypeUniquePointer,
                                   CompareTypeUniquePointers>;
 
   class UnresolvedType {
    public:
-    UnresolvedType(uint32_t i, Type* t) : id_(i), type_(t) {}
+    UnresolvedType(uint32_t i, CAUniquePtr<Type> t)
+        : id_(i), type_(std::move(t)) {}
     UnresolvedType(const UnresolvedType&) = delete;
     UnresolvedType(UnresolvedType&& that)
         : id_(that.id_), type_(std::move(that.type_)) {}
 
     uint32_t id() { return id_; }
     Type* type() { return type_.get(); }
-    std::unique_ptr<Type>&& ReleaseType() { return std::move(type_); }
+    CAUniquePtr<Type>&& ReleaseType() { return std::move(type_); }
     void ResetType(Type* t) { type_.reset(t); }
 
    private:
     uint32_t id_;
-    std::unique_ptr<Type> type_;
+    CAUniquePtr<Type> type_;
   };
   using IdToUnresolvedType = std::vector<UnresolvedType>;
 

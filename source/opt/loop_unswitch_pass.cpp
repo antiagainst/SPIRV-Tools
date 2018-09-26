@@ -97,9 +97,10 @@ class LoopUnswitch {
   BasicBlock* CreateBasicBlock(Function::iterator ip) {
     analysis::DefUseManager* def_use_mgr = context_->get_def_use_mgr();
 
-    BasicBlock* bb = &*ip.InsertBefore(std::unique_ptr<BasicBlock>(
-        new BasicBlock(std::unique_ptr<Instruction>(new Instruction(
-            context_, SpvOpLabel, 0, context_->TakeNextId(), {})))));
+    BasicBlock* bb =
+        &*ip.InsertBefore(CAMakeUnique<BasicBlock>(CAMakeUnique<Instruction>(
+            context_, SpvOpLabel, 0, context_->TakeNextId(),
+            std::initializer_list<Operand>{})));
     bb->SetParent(function_);
     def_use_mgr->AnalyzeInstDef(bb->GetLabelInst());
     context_->set_instr_block(bb->GetLabelInst(), bb);
@@ -150,10 +151,10 @@ class LoopUnswitch {
       // Update CFG.
       if_merge_block->ForEachPhiInst(
           [loop_merge_block, &builder, this](Instruction* phi) {
-            Instruction* cloned = phi->Clone(context_);
-            builder.AddInstruction(std::unique_ptr<Instruction>(cloned));
+            auto cloned = phi->Clone(context_);
             phi->SetInOperand(0, {cloned->result_id()});
             phi->SetInOperand(1, {loop_merge_block->id()});
+            builder.AddInstruction(std::move(cloned));
             for (uint32_t j = phi->NumInOperands() - 1; j > 1; j--)
               phi->RemoveInOperand(j);
           });
@@ -543,9 +544,7 @@ class LoopUnswitch {
         *cond_val = true;
         cond_is_const = true;
       } break;
-      default: {
-        cond_is_const = false;
-      } break;
+      default: { cond_is_const = false; } break;
     }
     return cond_is_const;
   }

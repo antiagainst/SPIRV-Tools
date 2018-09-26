@@ -143,10 +143,10 @@ void ScalarReplacementPass::ReplaceWholeLoad(
 
     Instruction* type = GetStorageType(var);
     uint32_t loadId = TakeNextId();
-    std::unique_ptr<Instruction> newLoad(
-        new Instruction(context(), SpvOpLoad, type->result_id(), loadId,
-                        std::initializer_list<Operand>{
-                            {SPV_OPERAND_TYPE_ID, {var->result_id()}}}));
+    auto newLoad = CAMakeUnique<Instruction>(
+        context(), SpvOpLoad, type->result_id(), loadId,
+        std::initializer_list<Operand>{
+            {SPV_OPERAND_TYPE_ID, {var->result_id()}}});
     // Copy memory access attributes which start at index 1. Index 0 is the
     // pointer to load.
     for (uint32_t i = 1; i < load->NumInOperands(); ++i) {
@@ -162,8 +162,9 @@ void ScalarReplacementPass::ReplaceWholeLoad(
   // Construct a new composite.
   uint32_t compositeId = TakeNextId();
   where = load;
-  std::unique_ptr<Instruction> compositeConstruct(new Instruction(
-      context(), SpvOpCompositeConstruct, load->type_id(), compositeId, {}));
+  auto compositeConstruct = CAMakeUnique<Instruction>(
+      context(), SpvOpCompositeConstruct, load->type_id(), compositeId,
+      std::initializer_list<Operand>{});
   for (auto l : loads) {
     Operand op(SPV_OPERAND_TYPE_ID,
                std::initializer_list<uint32_t>{l->result_id()});
@@ -192,21 +193,21 @@ void ScalarReplacementPass::ReplaceWholeStore(
 
     Instruction* type = GetStorageType(var);
     uint32_t extractId = TakeNextId();
-    std::unique_ptr<Instruction> extract(new Instruction(
+    auto extract = CAMakeUnique<Instruction>(
         context(), SpvOpCompositeExtract, type->result_id(), extractId,
         std::initializer_list<Operand>{
             {SPV_OPERAND_TYPE_ID, {storeInput}},
-            {SPV_OPERAND_TYPE_LITERAL_INTEGER, {elementIndex++}}}));
+            {SPV_OPERAND_TYPE_LITERAL_INTEGER, {elementIndex++}}});
     auto iter = where.InsertBefore(std::move(extract));
     get_def_use_mgr()->AnalyzeInstDefUse(&*iter);
     context()->set_instr_block(&*iter, block);
 
     // Create the store.
-    std::unique_ptr<Instruction> newStore(
-        new Instruction(context(), SpvOpStore, 0, 0,
-                        std::initializer_list<Operand>{
-                            {SPV_OPERAND_TYPE_ID, {var->result_id()}},
-                            {SPV_OPERAND_TYPE_ID, {extractId}}}));
+    auto newStore =
+        CAMakeUnique<Instruction>(context(), SpvOpStore, 0, 0,
+                                  std::initializer_list<Operand>{
+                                      {SPV_OPERAND_TYPE_ID, {var->result_id()}},
+                                      {SPV_OPERAND_TYPE_ID, {extractId}}});
     // Copy memory access attributes which start at index 2. Index 0 is the
     // pointer and index 1 is the data.
     for (uint32_t i = 2; i < store->NumInOperands(); ++i) {
@@ -235,10 +236,10 @@ bool ScalarReplacementPass::ReplaceAccessChain(
       // Replace input access chain with another access chain.
       BasicBlock::iterator chainIter(chain);
       uint32_t replacementId = TakeNextId();
-      std::unique_ptr<Instruction> replacementChain(new Instruction(
+      auto replacementChain = CAMakeUnique<Instruction>(
           context(), chain->opcode(), chain->type_id(), replacementId,
           std::initializer_list<Operand>{
-              {SPV_OPERAND_TYPE_ID, {var->result_id()}}}));
+              {SPV_OPERAND_TYPE_ID, {var->result_id()}}});
       // Add the remaining indexes.
       for (uint32_t i = 2; i < chain->NumInOperands(); ++i) {
         Operand copy(chain->GetInOperand(i));
@@ -315,11 +316,11 @@ void ScalarReplacementPass::TransferAnnotations(
     if (decoration == SpvDecorationInvariant ||
         decoration == SpvDecorationRestrict) {
       for (auto var : *replacements) {
-        std::unique_ptr<Instruction> annotation(
-            new Instruction(context(), SpvOpDecorate, 0, 0,
-                            std::initializer_list<Operand>{
-                                {SPV_OPERAND_TYPE_ID, {var->result_id()}},
-                                {SPV_OPERAND_TYPE_DECORATION, {decoration}}}));
+        auto annotation = CAMakeUnique<Instruction>(
+            context(), SpvOpDecorate, 0, 0,
+            std::initializer_list<Operand>{
+                {SPV_OPERAND_TYPE_ID, {var->result_id()}},
+                {SPV_OPERAND_TYPE_DECORATION, {decoration}}});
         for (uint32_t i = 2; i < inst->NumInOperands(); ++i) {
           Operand copy(inst->GetInOperand(i));
           annotation->AddOperand(std::move(copy));
@@ -336,10 +337,10 @@ void ScalarReplacementPass::CreateVariable(
     std::vector<Instruction*>* replacements) {
   uint32_t ptrId = GetOrCreatePointerType(typeId);
   uint32_t id = TakeNextId();
-  std::unique_ptr<Instruction> variable(new Instruction(
+  auto variable = CAMakeUnique<Instruction>(
       context(), SpvOpVariable, ptrId, id,
       std::initializer_list<Operand>{
-          {SPV_OPERAND_TYPE_STORAGE_CLASS, {SpvStorageClassFunction}}}));
+          {SPV_OPERAND_TYPE_STORAGE_CLASS, {SpvStorageClassFunction}}});
 
   BasicBlock* block = context()->get_instr_block(varInst);
   block->begin().InsertBefore(std::move(variable));
@@ -358,7 +359,7 @@ uint32_t ScalarReplacementPass::GetOrCreatePointerType(uint32_t id) {
   if (iter != pointee_to_pointer_.end()) return iter->second;
 
   analysis::Type* pointeeTy;
-  std::unique_ptr<analysis::Pointer> pointerTy;
+  CAUniquePtr<analysis::Pointer> pointerTy;
   std::tie(pointeeTy, pointerTy) =
       context()->get_type_mgr()->GetTypeAndPointerType(id,
                                                        SpvStorageClassFunction);
@@ -390,7 +391,7 @@ uint32_t ScalarReplacementPass::GetOrCreatePointerType(uint32_t id) {
   }
 
   ptrId = TakeNextId();
-  context()->AddType(MakeUnique<Instruction>(
+  context()->AddType(CAMakeUnique<Instruction>(
       context(), SpvOpTypePointer, 0, ptrId,
       std::initializer_list<Operand>{
           {SPV_OPERAND_TYPE_STORAGE_CLASS, {SpvStorageClassFunction}},
@@ -421,9 +422,9 @@ void ScalarReplacementPass::GetOrCreateInitialValue(Instruction* source,
     if (iter == type_to_null_.end()) {
       newInitId = TakeNextId();
       type_to_null_[storageId] = newInitId;
-      context()->AddGlobalValue(
-          MakeUnique<Instruction>(context(), SpvOpConstantNull, storageId,
-                                  newInitId, std::initializer_list<Operand>{}));
+      context()->AddGlobalValue(CAMakeUnique<Instruction>(
+          context(), SpvOpConstantNull, storageId, newInitId,
+          std::initializer_list<Operand>{}));
       Instruction* newNull = &*--context()->types_values_end();
       get_def_use_mgr()->AnalyzeInstDefUse(newNull);
     } else {
@@ -432,7 +433,7 @@ void ScalarReplacementPass::GetOrCreateInitialValue(Instruction* source,
   } else if (IsSpecConstantInst(init->opcode())) {
     // Create a new constant extract.
     newInitId = TakeNextId();
-    context()->AddGlobalValue(MakeUnique<Instruction>(
+    context()->AddGlobalValue(CAMakeUnique<Instruction>(
         context(), SpvOpSpecConstantOp, storageId, newInitId,
         std::initializer_list<Operand>{
             {SPV_OPERAND_TYPE_SPEC_CONSTANT_OP_NUMBER, {SpvOpCompositeExtract}},

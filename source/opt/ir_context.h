@@ -95,7 +95,7 @@ class IRContext {
     module_->SetContext(this);
   }
 
-  IRContext(spv_target_env env, std::unique_ptr<Module>&& m, MessageConsumer c)
+  IRContext(spv_target_env env, CAUniquePtr<Module>&& m, MessageConsumer c)
       : syntax_context_(spvContextCreate(env)),
         grammar_(syntax_context_),
         unique_id_(0),
@@ -177,36 +177,36 @@ class IRContext {
   inline void debug_clear();
 
   // Appends a capability instruction to this module.
-  inline void AddCapability(std::unique_ptr<Instruction>&& c);
+  inline void AddCapability(CAUniquePtr<Instruction>&& c);
   // Appends an extension instruction to this module.
-  inline void AddExtension(std::unique_ptr<Instruction>&& e);
+  inline void AddExtension(CAUniquePtr<Instruction>&& e);
   // Appends an extended instruction set instruction to this module.
-  inline void AddExtInstImport(std::unique_ptr<Instruction>&& e);
+  inline void AddExtInstImport(CAUniquePtr<Instruction>&& e);
   // Set the memory model for this module.
-  inline void SetMemoryModel(std::unique_ptr<Instruction>&& m);
+  inline void SetMemoryModel(CAUniquePtr<Instruction>&& m);
   // Appends an entry point instruction to this module.
-  inline void AddEntryPoint(std::unique_ptr<Instruction>&& e);
+  inline void AddEntryPoint(CAUniquePtr<Instruction>&& e);
   // Appends an execution mode instruction to this module.
-  inline void AddExecutionMode(std::unique_ptr<Instruction>&& e);
+  inline void AddExecutionMode(CAUniquePtr<Instruction>&& e);
   // Appends a debug 1 instruction (excluding OpLine & OpNoLine) to this module.
   // "debug 1" instructions are the ones in layout section 7.a), see section
   // 2.4 Logical Layout of a Module from the SPIR-V specification.
-  inline void AddDebug1Inst(std::unique_ptr<Instruction>&& d);
+  inline void AddDebug1Inst(CAUniquePtr<Instruction>&& d);
   // Appends a debug 2 instruction (excluding OpLine & OpNoLine) to this module.
   // "debug 2" instructions are the ones in layout section 7.b), see section
   // 2.4 Logical Layout of a Module from the SPIR-V specification.
-  inline void AddDebug2Inst(std::unique_ptr<Instruction>&& d);
+  inline void AddDebug2Inst(CAUniquePtr<Instruction>&& d);
   // Appends a debug 3 instruction (OpModuleProcessed) to this module.
   // This is due to decision by the SPIR Working Group, pending publication.
-  inline void AddDebug3Inst(std::unique_ptr<Instruction>&& d);
+  inline void AddDebug3Inst(CAUniquePtr<Instruction>&& d);
   // Appends an annotation instruction to this module.
-  inline void AddAnnotationInst(std::unique_ptr<Instruction>&& a);
+  inline void AddAnnotationInst(CAUniquePtr<Instruction>&& a);
   // Appends a type-declaration instruction to this module.
-  inline void AddType(std::unique_ptr<Instruction>&& t);
+  inline void AddType(CAUniquePtr<Instruction>&& t);
   // Appends a constant, global variable, or OpUndef instruction to this module.
-  inline void AddGlobalValue(std::unique_ptr<Instruction>&& v);
+  inline void AddGlobalValue(CAUniquePtr<Instruction>&& v);
   // Appends a function to this module.
-  inline void AddFunction(std::unique_ptr<Function>&& f);
+  inline void AddFunction(CAUniquePtr<Function>&& f);
 
   // Returns a pointer to a def-use manager.  If the def-use manager is
   // invalid, it is rebuilt first.
@@ -272,11 +272,11 @@ class IRContext {
   }
 
   // Returns a pointer to the constant manager.  If no constant manager has been
-  // created yet, it creates one.  NOTE: Once created, the constant manager
+  // created yet, it creates one.  note: once created, the constant manager
   // remains active and it is never re-built.
   analysis::ConstantManager* get_constant_mgr() {
     if (!constant_mgr_)
-      constant_mgr_ = MakeUnique<analysis::ConstantManager>(this);
+      constant_mgr_ = CAMakeUnique<analysis::ConstantManager>(this);
     return constant_mgr_.get();
   }
 
@@ -285,7 +285,7 @@ class IRContext {
   // is never re-built.
   analysis::TypeManager* get_type_mgr() {
     if (!type_mgr_)
-      type_mgr_ = MakeUnique<analysis::TypeManager>(consumer(), this);
+      type_mgr_ = CAMakeUnique<analysis::TypeManager>(consumer(), this);
     return type_mgr_.get();
   }
 
@@ -452,7 +452,7 @@ class IRContext {
 
   const InstructionFolder& get_instruction_folder() {
     if (!inst_folder_) {
-      inst_folder_ = MakeUnique<InstructionFolder>(this);
+      inst_folder_ = CAMakeUnique<InstructionFolder>(this);
     }
     return *inst_folder_;
   }
@@ -463,7 +463,7 @@ class IRContext {
  private:
   // Builds the def-use manager from scratch, even if it was already valid.
   void BuildDefUseManager() {
-    def_use_mgr_ = MakeUnique<analysis::DefUseManager>(module());
+    def_use_mgr_ = CAMakeUnique<analysis::DefUseManager>(module());
     valid_analyses_ = valid_analyses_ | kAnalysisDefUse;
   }
 
@@ -481,30 +481,30 @@ class IRContext {
   }
 
   void BuildDecorationManager() {
-    decoration_mgr_ = MakeUnique<analysis::DecorationManager>(module());
+    decoration_mgr_ = CAMakeUnique<analysis::DecorationManager>(module());
     valid_analyses_ = valid_analyses_ | kAnalysisDecorations;
   }
 
   void BuildCFG() {
-    cfg_ = MakeUnique<CFG>(module());
+    cfg_ = CAMakeUnique<CFG>(module());
     valid_analyses_ = valid_analyses_ | kAnalysisCFG;
   }
 
   void BuildScalarEvolutionAnalysis() {
-    scalar_evolution_analysis_ = MakeUnique<ScalarEvolutionAnalysis>(this);
+    scalar_evolution_analysis_ = CAMakeUnique<ScalarEvolutionAnalysis>(this);
     valid_analyses_ = valid_analyses_ | kAnalysisScalarEvolution;
   }
 
   // Builds the liveness analysis from scratch, even if it was already valid.
   void BuildRegPressureAnalysis() {
-    reg_pressure_ = MakeUnique<LivenessAnalysis>(this);
+    reg_pressure_ = CAMakeUnique<LivenessAnalysis>(this);
     valid_analyses_ = valid_analyses_ | kAnalysisRegisterPressure;
   }
 
   // Builds the value number table analysis from scratch, even if it was already
   // valid.
   void BuildValueNumberTable() {
-    vn_table_ = MakeUnique<ValueNumberTable>(this);
+    vn_table_ = CAMakeUnique<ValueNumberTable>(this);
     valid_analyses_ = valid_analyses_ | kAnalysisValueNumberTable;
   }
 
@@ -526,7 +526,7 @@ class IRContext {
 
   // Analyzes the features in the owned module. Builds the manager if required.
   void AnalyzeFeatures() {
-    feature_mgr_ = MakeUnique<FeatureManager>(grammar_);
+    feature_mgr_ = CAMakeUnique<FeatureManager>(grammar_);
     feature_mgr_->Analyze(module());
   }
 
@@ -562,17 +562,17 @@ class IRContext {
   uint32_t unique_id_;
 
   // The module being processed within this IR context.
-  std::unique_ptr<Module> module_;
+  CAUniquePtr<Module> module_;
 
   // A message consumer for diagnostics.
   MessageConsumer consumer_;
 
   // The def-use manager for |module_|.
-  std::unique_ptr<analysis::DefUseManager> def_use_mgr_;
+  CAUniquePtr<analysis::DefUseManager> def_use_mgr_;
 
   // The instruction decoration manager for |module_|.
-  std::unique_ptr<analysis::DecorationManager> decoration_mgr_;
-  std::unique_ptr<FeatureManager> feature_mgr_;
+  CAUniquePtr<analysis::DecorationManager> decoration_mgr_;
+  CAUniquePtr<FeatureManager> feature_mgr_;
 
   // A map from instructions the the basic block they belong to. This mapping is
   // built on-demand when get_instr_block() is called.
@@ -589,7 +589,7 @@ class IRContext {
   CAUnorderedMap<uint32_t, CAUnorderedSet<uint32_t>> combinator_ops_;
 
   // The CFG for all the functions in |module_|.
-  std::unique_ptr<CFG> cfg_;
+  CAUniquePtr<CFG> cfg_;
 
   // Each function in the module will create its own dominator tree. We cache
   // the result so it doesn't need to be rebuilt each time.
@@ -600,23 +600,23 @@ class IRContext {
   CAUnorderedMap<const Function*, LoopDescriptor> loop_descriptors_;
 
   // Constant manager for |module_|.
-  std::unique_ptr<analysis::ConstantManager> constant_mgr_;
+  CAUniquePtr<analysis::ConstantManager> constant_mgr_;
 
   // Type manager for |module_|.
-  std::unique_ptr<analysis::TypeManager> type_mgr_;
+  CAUniquePtr<analysis::TypeManager> type_mgr_;
 
   // A map from an id to its corresponding OpName and OpMemberName instructions.
-  std::unique_ptr<std::multimap<uint32_t, Instruction*>> id_to_name_;
+  CAUniquePtr<std::multimap<uint32_t, Instruction*>> id_to_name_;
 
   // The cache scalar evolution analysis node.
-  std::unique_ptr<ScalarEvolutionAnalysis> scalar_evolution_analysis_;
+  CAUniquePtr<ScalarEvolutionAnalysis> scalar_evolution_analysis_;
 
   // The liveness analysis |module_|.
-  std::unique_ptr<LivenessAnalysis> reg_pressure_;
+  CAUniquePtr<LivenessAnalysis> reg_pressure_;
 
-  std::unique_ptr<ValueNumberTable> vn_table_;
+  CAUniquePtr<ValueNumberTable> vn_table_;
 
-  std::unique_ptr<InstructionFolder> inst_folder_;
+  CAUniquePtr<InstructionFolder> inst_folder_;
 
   // The maximum legal value for the id bound.
   uint32_t max_id_bound_;
@@ -759,37 +759,37 @@ IteratorRange<Module::const_inst_iterator> IRContext::debugs3() const {
 
 void IRContext::debug_clear() { module_->debug_clear(); }
 
-void IRContext::AddCapability(std::unique_ptr<Instruction>&& c) {
+void IRContext::AddCapability(CAUniquePtr<Instruction>&& c) {
   AddCombinatorsForCapability(c->GetSingleWordInOperand(0));
   module()->AddCapability(std::move(c));
 }
 
-void IRContext::AddExtension(std::unique_ptr<Instruction>&& e) {
+void IRContext::AddExtension(CAUniquePtr<Instruction>&& e) {
   module()->AddExtension(std::move(e));
 }
 
-void IRContext::AddExtInstImport(std::unique_ptr<Instruction>&& e) {
+void IRContext::AddExtInstImport(CAUniquePtr<Instruction>&& e) {
   AddCombinatorsForExtension(e.get());
   module()->AddExtInstImport(std::move(e));
 }
 
-void IRContext::SetMemoryModel(std::unique_ptr<Instruction>&& m) {
+void IRContext::SetMemoryModel(CAUniquePtr<Instruction>&& m) {
   module()->SetMemoryModel(std::move(m));
 }
 
-void IRContext::AddEntryPoint(std::unique_ptr<Instruction>&& e) {
+void IRContext::AddEntryPoint(CAUniquePtr<Instruction>&& e) {
   module()->AddEntryPoint(std::move(e));
 }
 
-void IRContext::AddExecutionMode(std::unique_ptr<Instruction>&& e) {
+void IRContext::AddExecutionMode(CAUniquePtr<Instruction>&& e) {
   module()->AddExecutionMode(std::move(e));
 }
 
-void IRContext::AddDebug1Inst(std::unique_ptr<Instruction>&& d) {
+void IRContext::AddDebug1Inst(CAUniquePtr<Instruction>&& d) {
   module()->AddDebug1Inst(std::move(d));
 }
 
-void IRContext::AddDebug2Inst(std::unique_ptr<Instruction>&& d) {
+void IRContext::AddDebug2Inst(CAUniquePtr<Instruction>&& d) {
   if (AreAnalysesValid(kAnalysisNameMap)) {
     if (d->opcode() == SpvOpName || d->opcode() == SpvOpMemberName) {
       id_to_name_->insert({d->result_id(), d.get()});
@@ -798,32 +798,32 @@ void IRContext::AddDebug2Inst(std::unique_ptr<Instruction>&& d) {
   module()->AddDebug2Inst(std::move(d));
 }
 
-void IRContext::AddDebug3Inst(std::unique_ptr<Instruction>&& d) {
+void IRContext::AddDebug3Inst(CAUniquePtr<Instruction>&& d) {
   module()->AddDebug3Inst(std::move(d));
 }
 
-void IRContext::AddAnnotationInst(std::unique_ptr<Instruction>&& a) {
+void IRContext::AddAnnotationInst(CAUniquePtr<Instruction>&& a) {
   if (AreAnalysesValid(kAnalysisDecorations)) {
     get_decoration_mgr()->AddDecoration(a.get());
   }
   module()->AddAnnotationInst(std::move(a));
 }
 
-void IRContext::AddType(std::unique_ptr<Instruction>&& t) {
+void IRContext::AddType(CAUniquePtr<Instruction>&& t) {
   module()->AddType(std::move(t));
   if (AreAnalysesValid(kAnalysisDefUse)) {
     get_def_use_mgr()->AnalyzeInstDefUse(&*(--types_values_end()));
   }
 }
 
-void IRContext::AddGlobalValue(std::unique_ptr<Instruction>&& v) {
+void IRContext::AddGlobalValue(CAUniquePtr<Instruction>&& v) {
   module()->AddGlobalValue(std::move(v));
   if (AreAnalysesValid(kAnalysisDefUse)) {
     get_def_use_mgr()->AnalyzeInstDef(&*(--types_values_end()));
   }
 }
 
-void IRContext::AddFunction(std::unique_ptr<Function>&& f) {
+void IRContext::AddFunction(CAUniquePtr<Function>&& f) {
   module()->AddFunction(std::move(f));
 }
 
@@ -840,7 +840,7 @@ void IRContext::UpdateDefUse(Instruction* inst) {
 }
 
 void IRContext::BuildIdToNameMap() {
-  id_to_name_ = MakeUnique<std::multimap<uint32_t, Instruction*>>();
+  id_to_name_ = CAMakeUnique<std::multimap<uint32_t, Instruction*>>();
   for (Instruction& debug_inst : debugs2()) {
     if (debug_inst.opcode() == SpvOpMemberName ||
         debug_inst.opcode() == SpvOpName) {

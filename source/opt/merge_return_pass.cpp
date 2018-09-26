@@ -118,12 +118,12 @@ void MergeReturnPass::ProcessStructured(
 
 void MergeReturnPass::CreateReturnBlock() {
   // Create a label for the new return block
-  std::unique_ptr<Instruction> return_label(
-      new Instruction(context(), SpvOpLabel, 0u, TakeNextId(), {}));
+  auto return_label =
+      CAMakeUnique<Instruction>(context(), SpvOpLabel, 0u, TakeNextId(),
+                                std::initializer_list<Operand>{});
 
   // Create the new basic block
-  std::unique_ptr<BasicBlock> return_block(
-      new BasicBlock(std::move(return_label)));
+  auto return_block = CAMakeUnique<BasicBlock>(std::move(return_label));
   function_->AddBasicBlock(std::move(return_block));
   final_return_block_ = &*(--function_->end());
   context()->AnalyzeDefUse(final_return_block_->GetLabelInst());
@@ -138,7 +138,7 @@ void MergeReturnPass::CreateReturn(BasicBlock* block) {
   if (return_value_) {
     // Load and return the final return value
     uint32_t loadId = TakeNextId();
-    block->AddInstruction(MakeUnique<Instruction>(
+    block->AddInstruction(CAMakeUnique<Instruction>(
         context(), SpvOpLoad, function_->type_id(), loadId,
         std::initializer_list<Operand>{
             {SPV_OPERAND_TYPE_ID, {return_value_->result_id()}}}));
@@ -148,13 +148,13 @@ void MergeReturnPass::CreateReturn(BasicBlock* block) {
     context()->get_decoration_mgr()->CloneDecorations(
         return_value_->result_id(), loadId, {SpvDecorationRelaxedPrecision});
 
-    block->AddInstruction(MakeUnique<Instruction>(
+    block->AddInstruction(CAMakeUnique<Instruction>(
         context(), SpvOpReturnValue, 0, 0,
         std::initializer_list<Operand>{{SPV_OPERAND_TYPE_ID, {loadId}}}));
     context()->AnalyzeDefUse(block->terminator());
     context()->set_instr_block(block->terminator(), block);
   } else {
-    block->AddInstruction(MakeUnique<Instruction>(context(), SpvOpReturn));
+    block->AddInstruction(CAMakeUnique<Instruction>(context(), SpvOpReturn));
     context()->AnalyzeDefUse(block->terminator());
     context()->set_instr_block(block->terminator(), block);
   }
@@ -404,11 +404,11 @@ void MergeReturnPass::RecordReturned(BasicBlock* block) {
     context()->UpdateDefUse(constant_true_);
   }
 
-  std::unique_ptr<Instruction> return_store(new Instruction(
+  auto return_store = CAMakeUnique<Instruction>(
       context(), SpvOpStore, 0, 0,
       std::initializer_list<Operand>{
           {SPV_OPERAND_TYPE_ID, {return_flag_->result_id()}},
-          {SPV_OPERAND_TYPE_ID, {constant_true_->result_id()}}}));
+          {SPV_OPERAND_TYPE_ID, {constant_true_->result_id()}}});
 
   Instruction* store_inst =
       &*block->tail().InsertBefore(std::move(return_store));
@@ -425,11 +425,11 @@ void MergeReturnPass::RecordReturnValue(BasicBlock* block) {
   assert(return_value_ &&
          "Did not generate the variable to hold the return value.");
 
-  std::unique_ptr<Instruction> value_store(new Instruction(
+  auto value_store = CAMakeUnique<Instruction>(
       context(), SpvOpStore, 0, 0,
       std::initializer_list<Operand>{
           {SPV_OPERAND_TYPE_ID, {return_value_->result_id()}},
-          {SPV_OPERAND_TYPE_ID, {terminator.GetSingleWordInOperand(0u)}}}));
+          {SPV_OPERAND_TYPE_ID, {terminator.GetSingleWordInOperand(0u)}}});
 
   Instruction* store_inst =
       &*block->tail().InsertBefore(std::move(value_store));
@@ -448,10 +448,10 @@ void MergeReturnPass::AddReturnValue() {
       return_type_id, SpvStorageClassFunction);
 
   uint32_t var_id = TakeNextId();
-  std::unique_ptr<Instruction> returnValue(new Instruction(
+  auto returnValue = CAMakeUnique<Instruction>(
       context(), SpvOpVariable, return_ptr_type, var_id,
       std::initializer_list<Operand>{
-          {SPV_OPERAND_TYPE_STORAGE_CLASS, {SpvStorageClassFunction}}}));
+          {SPV_OPERAND_TYPE_STORAGE_CLASS, {SpvStorageClassFunction}}});
 
   auto insert_iter = function_->begin()->begin();
   insert_iter.InsertBefore(std::move(returnValue));
@@ -483,11 +483,11 @@ void MergeReturnPass::AddReturnFlag() {
       type_mgr->FindPointerToType(bool_id, SpvStorageClassFunction);
 
   uint32_t var_id = TakeNextId();
-  std::unique_ptr<Instruction> returnFlag(new Instruction(
+  auto returnFlag = CAMakeUnique<Instruction>(
       context(), SpvOpVariable, bool_ptr_id, var_id,
       std::initializer_list<Operand>{
           {SPV_OPERAND_TYPE_STORAGE_CLASS, {SpvStorageClassFunction}},
-          {SPV_OPERAND_TYPE_ID, {const_false_id}}}));
+          {SPV_OPERAND_TYPE_ID, {const_false_id}}});
 
   auto insert_iter = function_->begin()->begin();
 
@@ -536,14 +536,14 @@ void MergeReturnPass::MergeReturnBlocks(
     // Need a PHI node to select the correct return value.
     uint32_t phi_result_id = TakeNextId();
     uint32_t phi_type_id = function->type_id();
-    std::unique_ptr<Instruction> phi_inst(new Instruction(
-        context(), SpvOpPhi, phi_type_id, phi_result_id, phi_ops));
+    auto phi_inst = CAMakeUnique<Instruction>(context(), SpvOpPhi, phi_type_id,
+                                              phi_result_id, phi_ops);
     ret_block_iter->AddInstruction(std::move(phi_inst));
     BasicBlock::iterator phiIter = ret_block_iter->tail();
 
-    std::unique_ptr<Instruction> return_inst(
-        new Instruction(context(), SpvOpReturnValue, 0u, 0u,
-                        {{SPV_OPERAND_TYPE_ID, {phi_result_id}}}));
+    auto return_inst = CAMakeUnique<Instruction>(
+        context(), SpvOpReturnValue, 0u, 0u,
+        std::initializer_list<Operand>{{SPV_OPERAND_TYPE_ID, {phi_result_id}}});
     ret_block_iter->AddInstruction(std::move(return_inst));
     BasicBlock::iterator ret = ret_block_iter->tail();
 
@@ -551,8 +551,7 @@ void MergeReturnPass::MergeReturnBlocks(
     get_def_use_mgr()->AnalyzeInstDefUse(&*phiIter);
     get_def_use_mgr()->AnalyzeInstDef(&*ret);
   } else {
-    std::unique_ptr<Instruction> return_inst(
-        new Instruction(context(), SpvOpReturn));
+    auto return_inst = CAMakeUnique<Instruction>(context(), SpvOpReturn);
     ret_block_iter->AddInstruction(std::move(return_inst));
   }
 
@@ -622,11 +621,12 @@ void MergeReturnPass::AddDummyLoopAroundFunction() {
 }
 
 BasicBlock* MergeReturnPass::CreateContinueTarget(uint32_t header_label_id) {
-  std::unique_ptr<Instruction> label(
-      new Instruction(context(), SpvOpLabel, 0u, TakeNextId(), {}));
+  auto label =
+      CAMakeUnique<Instruction>(context(), SpvOpLabel, 0u, TakeNextId(),
+                                std::initializer_list<Operand>{});
 
   // Create the new basic block
-  std::unique_ptr<BasicBlock> block(new BasicBlock(std::move(label)));
+  auto block = CAMakeUnique<BasicBlock>(std::move(label));
 
   // Insert the new block just before the return block
   auto pos = function_->end();
@@ -654,11 +654,12 @@ BasicBlock* MergeReturnPass::CreateContinueTarget(uint32_t header_label_id) {
 }
 
 void MergeReturnPass::CreateDummyLoop(BasicBlock* merge_target) {
-  std::unique_ptr<Instruction> label(
-      new Instruction(context(), SpvOpLabel, 0u, TakeNextId(), {}));
+  auto label =
+      CAMakeUnique<Instruction>(context(), SpvOpLabel, 0u, TakeNextId(),
+                                std::initializer_list<Operand>{});
 
   // Create the new basic block
-  std::unique_ptr<BasicBlock> block(new BasicBlock(std::move(label)));
+  auto block = CAMakeUnique<BasicBlock>(std::move(label));
 
   // Insert the new block before any code is run.  We have to split the entry
   // block to make sure the OpVariable instructions remain in the entry block.

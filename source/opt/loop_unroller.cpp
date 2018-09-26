@@ -165,7 +165,7 @@ struct LoopUnrollState {
 // maintain the state of the unrolling inbetween steps.
 class LoopUnrollerUtilsImpl {
  public:
-  using BasicBlockListTy = std::vector<std::unique_ptr<BasicBlock>>;
+  using BasicBlockListTy = std::vector<CAUniquePtr<BasicBlock>>;
 
   LoopUnrollerUtilsImpl(IRContext* c, Function* function)
       : context_(c),
@@ -376,9 +376,10 @@ void LoopUnrollerUtilsImpl::Init(Loop* loop) {
 // number of bodies.
 void LoopUnrollerUtilsImpl::PartiallyUnrollResidualFactor(Loop* loop,
                                                           size_t factor) {
-  std::unique_ptr<Instruction> new_label{new Instruction(
-      context_, SpvOp::SpvOpLabel, 0, context_->TakeNextId(), {})};
-  std::unique_ptr<BasicBlock> new_exit_bb{new BasicBlock(std::move(new_label))};
+  auto new_label = CAMakeUnique<Instruction>(context_, SpvOp::SpvOpLabel, 0,
+                                             context_->TakeNextId(),
+                                             std::initializer_list<Operand>{});
+  auto new_exit_bb = CAMakeUnique<BasicBlock>(std::move(new_label));
 
   // Save the id of the block before we move it.
   uint32_t new_merge_id = new_exit_bb->id();
@@ -419,8 +420,7 @@ void LoopUnrollerUtilsImpl::PartiallyUnrollResidualFactor(Loop* loop,
 
   // Add the new merge block to the back of the list of blocks to be added. It
   // needs to be the last block added to maintain dominator order in the binary.
-  blocks_to_add_.push_back(
-      std::unique_ptr<BasicBlock>(new_loop->GetMergeBlock()));
+  blocks_to_add_.push_back(CAUniquePtr<BasicBlock>(new_loop->GetMergeBlock()));
 
   // Add the blocks to the function.
   AddBlocksToFunction(loop->GetMergeBlock());
@@ -601,7 +601,8 @@ void LoopUnrollerUtilsImpl::FullyUnroll(Loop* loop) {
 void LoopUnrollerUtilsImpl::CopyBasicBlock(Loop* loop, const BasicBlock* itr,
                                            bool preserve_instructions) {
   // Clone the block exactly, including the IDs.
-  BasicBlock* basic_block = itr->Clone(context_);
+  auto basic_block_owned = itr->Clone(context_);
+  BasicBlock* basic_block = basic_block_owned.get();
   basic_block->SetParent(itr->GetParent());
 
   // Assign each result a new unique ID and keep a mapping of the old ids to
@@ -640,7 +641,7 @@ void LoopUnrollerUtilsImpl::CopyBasicBlock(Loop* loop, const BasicBlock* itr,
 
   // Add this block to the list of blocks to add to the function at the end of
   // the unrolling process.
-  blocks_to_add_.push_back(std::unique_ptr<BasicBlock>(basic_block));
+  blocks_to_add_.push_back(std::move(basic_block_owned));
 
   // Keep tracking the old block via a map.
   state_.new_blocks[itr->id()] = basic_block;
@@ -778,10 +779,15 @@ void LoopUnrollerUtilsImpl::DuplicateLoop(Loop* old_loop, Loop* new_loop) {
   }
 
   // Clone the merge block, give it a new id and record it in the state.
-  BasicBlock* new_merge = old_loop->GetMergeBlock()->Clone(context_);
+  auto new_merge_owned = old_loop->GetMergeBlock()->Clone(context_);
+  BasicBlock* new_merge = new_merge_owned.get();
   new_merge->SetParent(old_loop->GetMergeBlock()->GetParent());
   AssignNewResultIds(new_merge);
   state_.new_blocks[old_loop->GetMergeBlock()->id()] = new_merge;
+
+  // Add this block to the list of blocks to add to the function at the end of
+  // the unrolling process.
+  blocks_to_add_.push_back(std::move(new_merge_owned));
 
   // Remap the operands of every instruction in the loop to point to the new
   // copies.

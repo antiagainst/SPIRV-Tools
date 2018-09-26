@@ -964,7 +964,7 @@ void LoopDescriptor::ClearLoops() {
 }
 
 // Adds a new loop nest to the descriptor set.
-Loop* LoopDescriptor::AddLoopNest(std::unique_ptr<Loop> new_loop) {
+Loop* LoopDescriptor::AddLoopNest(CAUniquePtr<Loop> new_loop) {
   Loop* loop = new_loop.release();
   if (!loop->HasParent()) dummy_top_loop_.nested_loops_.push_back(loop);
   // Iterate from inner to outer most loop, adding basic block to loop mapping

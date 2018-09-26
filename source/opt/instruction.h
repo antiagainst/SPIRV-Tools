@@ -29,6 +29,7 @@
 
 #include "source/latest_version_glsl_std_450_header.h"
 #include "source/latest_version_spirv_header.h"
+#include "source/opt/allocator.h"
 #include "source/opt/reflect.h"
 #include "spirv-tools/libspirv.h"
 
@@ -145,7 +146,7 @@ class Instruction : public utils::IntrusiveNodeBase<Instruction> {
   // It is the responsibility of the caller to make sure that the storage is
   // removed. It is the caller's responsibility to make sure that there is only
   // one instruction for each result id.
-  Instruction* Clone(IRContext* c) const;
+  CAUniquePtr<Instruction> Clone(IRContext* c) const;
 
   IRContext* context() const { return context_; }
 
@@ -394,8 +395,8 @@ class Instruction : public utils::IntrusiveNodeBase<Instruction> {
   inline bool operator!=(const Instruction&) const;
   inline bool operator<(const Instruction&) const;
 
-  Instruction* InsertBefore(std::vector<std::unique_ptr<Instruction>>&& list);
-  Instruction* InsertBefore(std::unique_ptr<Instruction>&& i);
+  Instruction* InsertBefore(std::vector<CAUniquePtr<Instruction>>&& list);
+  Instruction* InsertBefore(CAUniquePtr<Instruction>&& i);
   using utils::IntrusiveNodeBase<Instruction>::InsertBefore;
 
   // Returns true if |this| is an instruction defining a constant, but not a

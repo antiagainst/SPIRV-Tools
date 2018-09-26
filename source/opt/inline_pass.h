@@ -48,26 +48,26 @@ class InlinePass : public Pass {
   uint32_t AddPointerToType(uint32_t type_id, SpvStorageClass storage_class);
 
   // Add unconditional branch to labelId to end of block block_ptr.
-  void AddBranch(uint32_t labelId, std::unique_ptr<BasicBlock>* block_ptr);
+  void AddBranch(uint32_t labelId, CAUniquePtr<BasicBlock>* block_ptr);
 
   // Add conditional branch to end of block |block_ptr|.
   void AddBranchCond(uint32_t cond_id, uint32_t true_id, uint32_t false_id,
-                     std::unique_ptr<BasicBlock>* block_ptr);
+                     CAUniquePtr<BasicBlock>* block_ptr);
 
   // Add unconditional branch to labelId to end of block block_ptr.
   void AddLoopMerge(uint32_t merge_id, uint32_t continue_id,
-                    std::unique_ptr<BasicBlock>* block_ptr);
+                    CAUniquePtr<BasicBlock>* block_ptr);
 
   // Add store of valId to ptrId to end of block block_ptr.
   void AddStore(uint32_t ptrId, uint32_t valId,
-                std::unique_ptr<BasicBlock>* block_ptr);
+                CAUniquePtr<BasicBlock>* block_ptr);
 
   // Add load of ptrId into resultId to end of block block_ptr.
   void AddLoad(uint32_t typeId, uint32_t resultId, uint32_t ptrId,
-               std::unique_ptr<BasicBlock>* block_ptr);
+               CAUniquePtr<BasicBlock>* block_ptr);
 
   // Return new label.
-  std::unique_ptr<Instruction> NewLabel(uint32_t label_id);
+  CAUniquePtr<Instruction> NewLabel(uint32_t label_id);
 
   // Returns the id for the boolean false value. Looks in the module first
   // and creates it if not found. Remembers it for future calls.
@@ -79,13 +79,13 @@ class InlinePass : public Pass {
 
   // Clone and map callee locals
   void CloneAndMapLocals(Function* calleeFn,
-                         std::vector<std::unique_ptr<Instruction>>* new_vars,
+                         std::vector<CAUniquePtr<Instruction>>* new_vars,
                          CAUnorderedMap<uint32_t, uint32_t>* callee2caller);
 
   // Create return variable for callee clone code if needed. Return id
   // if created, otherwise 0.
   uint32_t CreateReturnVar(Function* calleeFn,
-                           std::vector<std::unique_ptr<Instruction>>* new_vars);
+                           std::vector<CAUniquePtr<Instruction>>* new_vars);
 
   // Return true if instruction must be in the same block that its result
   // is used.
@@ -95,10 +95,10 @@ class InlinePass : public Pass {
   // Look in preCallSB for instructions that need cloning. Look in
   // postCallSB for instructions already cloned. Add cloned instruction
   // to postCallSB.
-  void CloneSameBlockOps(std::unique_ptr<Instruction>* inst,
+  void CloneSameBlockOps(CAUniquePtr<Instruction>* inst,
                          CAUnorderedMap<uint32_t, uint32_t>* postCallSB,
                          CAUnorderedMap<uint32_t, Instruction*>* preCallSB,
-                         std::unique_ptr<BasicBlock>* block_ptr);
+                         CAUniquePtr<BasicBlock>* block_ptr);
 
   // Return in new_blocks the result of inlining the call at call_inst_itr
   // within its block at call_block_itr. The block at call_block_itr can
@@ -114,8 +114,8 @@ class InlinePass : public Pass {
   // Also return in new_vars additional OpVariable instructions required by
   // and to be inserted into the caller function after the block at
   // call_block_itr is replaced with new_blocks.
-  void GenInlineCode(std::vector<std::unique_ptr<BasicBlock>>* new_blocks,
-                     std::vector<std::unique_ptr<Instruction>>* new_vars,
+  void GenInlineCode(std::vector<CAUniquePtr<BasicBlock>>* new_blocks,
+                     std::vector<CAUniquePtr<Instruction>>* new_vars,
                      BasicBlock::iterator call_inst_itr,
                      UptrVectorIterator<BasicBlock> call_block_itr);
 
@@ -150,8 +150,7 @@ class InlinePass : public Pass {
   bool IsInlinableFunction(Function* func);
 
   // Update phis in succeeding blocks to point to new last block
-  void UpdateSucceedingPhis(
-      std::vector<std::unique_ptr<BasicBlock>>& new_blocks);
+  void UpdateSucceedingPhis(std::vector<CAUniquePtr<BasicBlock>>& new_blocks);
 
   // Initialize state for optimization of |module|
   void InitializeInline();

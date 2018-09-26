@@ -16,9 +16,9 @@
 #define SOURCE_OPT_LOOP_UTILS_H_
 
 #include <list>
-#include <memory>
 #include <vector>
 
+#include "source/opt/allocator.h"
 #include "source/opt/ir_context.h"
 #include "source/opt/loop_descriptor.h"
 
@@ -59,7 +59,7 @@ class LoopUtils {
     // Mapping between the cloned loop blocks to original one.
     BlockMapTy new_to_old_bb_;
     // List of cloned basic block.
-    std::vector<std::unique_ptr<BasicBlock>> cloned_bb_;
+    std::vector<CAUniquePtr<BasicBlock>> cloned_bb_;
   };
 
   LoopUtils(IRContext* context, Loop* loop)

@@ -18,7 +18,7 @@ namespace spvtools {
 namespace opt {
 
 InstructionList::iterator InstructionList::iterator::InsertBefore(
-    std::vector<std::unique_ptr<Instruction>>&& list) {
+    std::vector<CAUniquePtr<Instruction>>&& list) {
   Instruction* first_node = list.front().get();
   for (auto& i : list) {
     i.release()->InsertBefore(node_);
@@ -28,7 +28,7 @@ InstructionList::iterator InstructionList::iterator::InsertBefore(
 }
 
 InstructionList::iterator InstructionList::iterator::InsertBefore(
-    std::unique_ptr<Instruction>&& i) {
+    CAUniquePtr<Instruction>&& i) {
   i.get()->InsertBefore(node_);
   return iterator(i.release());
 }

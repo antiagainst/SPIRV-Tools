@@ -47,13 +47,13 @@ Type* TypeManager::GetType(uint32_t id) const {
   return nullptr;
 }
 
-std::pair<Type*, std::unique_ptr<Pointer>> TypeManager::GetTypeAndPointerType(
+std::pair<Type*, CAUniquePtr<Pointer>> TypeManager::GetTypeAndPointerType(
     uint32_t id, SpvStorageClass sc) const {
   Type* type = GetType(id);
   if (type) {
-    return std::make_pair(type, MakeUnique<Pointer>(type, sc));
+    return std::make_pair(type, CAMakeUnique<Pointer>(type, sc));
   } else {
-    return std::make_pair(type, std::unique_ptr<Pointer>());
+    return std::make_pair(type, nullptr);
   }
 }
 
@@ -202,14 +202,14 @@ uint32_t TypeManager::GetTypeInstruction(const Type* type) {
   uint32_t id = GetId(type);
   if (id != 0) return id;
 
-  std::unique_ptr<Instruction> typeInst;
+  CAUniquePtr<Instruction> typeInst;
   id = context()->TakeNextId();
   RegisterType(id, *type);
   switch (type->kind()) {
-#define DefineParameterlessCase(kind)                                     \
-  case Type::k##kind:                                                     \
-    typeInst = MakeUnique<Instruction>(context(), SpvOpType##kind, 0, id, \
-                                       std::initializer_list<Operand>{}); \
+#define DefineParameterlessCase(kind)                                       \
+  case Type::k##kind:                                                       \
+    typeInst = CAMakeUnique<Instruction>(context(), SpvOpType##kind, 0, id, \
+                                         std::initializer_list<Operand>{}); \
     break;
     DefineParameterlessCase(Void);
     DefineParameterlessCase(Bool);
@@ -222,7 +222,7 @@ uint32_t TypeManager::GetTypeInstruction(const Type* type) {
     DefineParameterlessCase(NamedBarrier);
 #undef DefineParameterlessCase
     case Type::kInteger:
-      typeInst = MakeUnique<Instruction>(
+      typeInst = CAMakeUnique<Instruction>(
           context(), SpvOpTypeInt, 0, id,
           std::initializer_list<Operand>{
               {SPV_OPERAND_TYPE_LITERAL_INTEGER, {type->AsInteger()->width()}},
@@ -230,7 +230,7 @@ uint32_t TypeManager::GetTypeInstruction(const Type* type) {
                {(type->AsInteger()->IsSigned() ? 1u : 0u)}}});
       break;
     case Type::kFloat:
-      typeInst = MakeUnique<Instruction>(
+      typeInst = CAMakeUnique<Instruction>(
           context(), SpvOpTypeFloat, 0, id,
           std::initializer_list<Operand>{
               {SPV_OPERAND_TYPE_LITERAL_INTEGER, {type->AsFloat()->width()}}});
@@ -238,27 +238,27 @@ uint32_t TypeManager::GetTypeInstruction(const Type* type) {
     case Type::kVector: {
       uint32_t subtype = GetTypeInstruction(type->AsVector()->element_type());
       typeInst =
-          MakeUnique<Instruction>(context(), SpvOpTypeVector, 0, id,
-                                  std::initializer_list<Operand>{
-                                      {SPV_OPERAND_TYPE_ID, {subtype}},
-                                      {SPV_OPERAND_TYPE_LITERAL_INTEGER,
-                                       {type->AsVector()->element_count()}}});
+          CAMakeUnique<Instruction>(context(), SpvOpTypeVector, 0, id,
+                                    std::initializer_list<Operand>{
+                                        {SPV_OPERAND_TYPE_ID, {subtype}},
+                                        {SPV_OPERAND_TYPE_LITERAL_INTEGER,
+                                         {type->AsVector()->element_count()}}});
       break;
     }
     case Type::kMatrix: {
       uint32_t subtype = GetTypeInstruction(type->AsMatrix()->element_type());
       typeInst =
-          MakeUnique<Instruction>(context(), SpvOpTypeMatrix, 0, id,
-                                  std::initializer_list<Operand>{
-                                      {SPV_OPERAND_TYPE_ID, {subtype}},
-                                      {SPV_OPERAND_TYPE_LITERAL_INTEGER,
-                                       {type->AsMatrix()->element_count()}}});
+          CAMakeUnique<Instruction>(context(), SpvOpTypeMatrix, 0, id,
+                                    std::initializer_list<Operand>{
+                                        {SPV_OPERAND_TYPE_ID, {subtype}},
+                                        {SPV_OPERAND_TYPE_LITERAL_INTEGER,
+                                         {type->AsMatrix()->element_count()}}});
       break;
     }
     case Type::kImage: {
       const Image* image = type->AsImage();
       uint32_t subtype = GetTypeInstruction(image->sampled_type());
-      typeInst = MakeUnique<Instruction>(
+      typeInst = CAMakeUnique<Instruction>(
           context(), SpvOpTypeImage, 0, id,
           std::initializer_list<Operand>{
               {SPV_OPERAND_TYPE_ID, {subtype}},
@@ -279,14 +279,14 @@ uint32_t TypeManager::GetTypeInstruction(const Type* type) {
     case Type::kSampledImage: {
       uint32_t subtype =
           GetTypeInstruction(type->AsSampledImage()->image_type());
-      typeInst = MakeUnique<Instruction>(
+      typeInst = CAMakeUnique<Instruction>(
           context(), SpvOpTypeSampledImage, 0, id,
           std::initializer_list<Operand>{{SPV_OPERAND_TYPE_ID, {subtype}}});
       break;
     }
     case Type::kArray: {
       uint32_t subtype = GetTypeInstruction(type->AsArray()->element_type());
-      typeInst = MakeUnique<Instruction>(
+      typeInst = CAMakeUnique<Instruction>(
           context(), SpvOpTypeArray, 0, id,
           std::initializer_list<Operand>{
               {SPV_OPERAND_TYPE_ID, {subtype}},
@@ -296,7 +296,7 @@ uint32_t TypeManager::GetTypeInstruction(const Type* type) {
     case Type::kRuntimeArray: {
       uint32_t subtype =
           GetTypeInstruction(type->AsRuntimeArray()->element_type());
-      typeInst = MakeUnique<Instruction>(
+      typeInst = CAMakeUnique<Instruction>(
           context(), SpvOpTypeRuntimeArray, 0, id,
           std::initializer_list<Operand>{{SPV_OPERAND_TYPE_ID, {subtype}}});
       break;
@@ -308,7 +308,7 @@ uint32_t TypeManager::GetTypeInstruction(const Type* type) {
         ops.push_back(Operand(SPV_OPERAND_TYPE_ID, {GetTypeInstruction(ty)}));
       }
       typeInst =
-          MakeUnique<Instruction>(context(), SpvOpTypeStruct, 0, id, ops);
+          CAMakeUnique<Instruction>(context(), SpvOpTypeStruct, 0, id, ops);
       break;
     }
     case Type::kOpaque: {
@@ -318,7 +318,7 @@ uint32_t TypeManager::GetTypeInstruction(const Type* type) {
       std::vector<uint32_t> words(size / 4 + 1, 0);
       char* dst = reinterpret_cast<char*>(words.data());
       strncpy(dst, opaque->name().c_str(), size);
-      typeInst = MakeUnique<Instruction>(
+      typeInst = CAMakeUnique<Instruction>(
           context(), SpvOpTypeOpaque, 0, id,
           std::initializer_list<Operand>{
               {SPV_OPERAND_TYPE_LITERAL_STRING, words}});
@@ -327,7 +327,7 @@ uint32_t TypeManager::GetTypeInstruction(const Type* type) {
     case Type::kPointer: {
       const Pointer* pointer = type->AsPointer();
       uint32_t subtype = GetTypeInstruction(pointer->pointee_type());
-      typeInst = MakeUnique<Instruction>(
+      typeInst = CAMakeUnique<Instruction>(
           context(), SpvOpTypePointer, 0, id,
           std::initializer_list<Operand>{
               {SPV_OPERAND_TYPE_STORAGE_CLASS,
@@ -344,18 +344,18 @@ uint32_t TypeManager::GetTypeInstruction(const Type* type) {
         ops.push_back(Operand(SPV_OPERAND_TYPE_ID, {GetTypeInstruction(ty)}));
       }
       typeInst =
-          MakeUnique<Instruction>(context(), SpvOpTypeFunction, 0, id, ops);
+          CAMakeUnique<Instruction>(context(), SpvOpTypeFunction, 0, id, ops);
       break;
     }
     case Type::kPipe:
-      typeInst = MakeUnique<Instruction>(
+      typeInst = CAMakeUnique<Instruction>(
           context(), SpvOpTypePipe, 0, id,
           std::initializer_list<Operand>{
               {SPV_OPERAND_TYPE_ACCESS_QUALIFIER,
                {static_cast<uint32_t>(type->AsPipe()->access_qualifier())}}});
       break;
     case Type::kForwardPointer:
-      typeInst = MakeUnique<Instruction>(
+      typeInst = CAMakeUnique<Instruction>(
           context(), SpvOpTypeForwardPointer, 0, 0,
           std::initializer_list<Operand>{
               {SPV_OPERAND_TYPE_ID, {type->AsForwardPointer()->target_id()}},
@@ -396,11 +396,12 @@ uint32_t TypeManager::FindPointerToType(uint32_t type_id,
 
   // Must create the pointer type.
   uint32_t resultId = context()->TakeNextId();
-  std::unique_ptr<Instruction> type_inst(
-      new Instruction(context(), SpvOpTypePointer, 0, resultId,
-                      {{spv_operand_type_t::SPV_OPERAND_TYPE_STORAGE_CLASS,
-                        {uint32_t(storage_class)}},
-                       {spv_operand_type_t::SPV_OPERAND_TYPE_ID, {type_id}}}));
+  auto type_inst = CAMakeUnique<Instruction>(
+      context(), SpvOpTypePointer, 0, resultId,
+      std::initializer_list<Operand>{
+          {spv_operand_type_t::SPV_OPERAND_TYPE_STORAGE_CLASS,
+           {uint32_t(storage_class)}},
+          {spv_operand_type_t::SPV_OPERAND_TYPE_ID, {type_id}}});
   context()->AddType(std::move(type_inst));
   context()->get_type_mgr()->RegisterType(resultId, pointerTy);
   return resultId;
@@ -432,7 +433,7 @@ void TypeManager::CreateDecoration(uint32_t target,
   for (size_t i = 1; i < decoration.size(); ++i) {
     ops.push_back(Operand(SPV_OPERAND_TYPE_LITERAL_INTEGER, {decoration[i]}));
   }
-  context()->AddAnnotationInst(MakeUnique<Instruction>(
+  context()->AddAnnotationInst(CAMakeUnique<Instruction>(
       context(), (element == 0 ? SpvOpDecorate : SpvOpMemberDecorate), 0, 0,
       ops));
   Instruction* inst = &*--context()->annotation_end();
@@ -445,7 +446,7 @@ Type* TypeManager::RebuildType(const Type& type) {
   // when it goes out of scope at the end of the function in that case. Repeated
   // insertions of the same Type will, at most, keep one corresponding object in
   // the type pool.
-  std::unique_ptr<Type> rebuilt_ty;
+  CAUniquePtr<Type> rebuilt_ty;
   switch (type.kind()) {
 #define DefineNoSubtypeCase(kind)             \
   case Type::k##kind:                         \
@@ -470,43 +471,43 @@ Type* TypeManager::RebuildType(const Type& type) {
       const Vector* vec_ty = type.AsVector();
       const Type* ele_ty = vec_ty->element_type();
       rebuilt_ty =
-          MakeUnique<Vector>(RebuildType(*ele_ty), vec_ty->element_count());
+          CAMakeUnique<Vector>(RebuildType(*ele_ty), vec_ty->element_count());
       break;
     }
     case Type::kMatrix: {
       const Matrix* mat_ty = type.AsMatrix();
       const Type* ele_ty = mat_ty->element_type();
       rebuilt_ty =
-          MakeUnique<Matrix>(RebuildType(*ele_ty), mat_ty->element_count());
+          CAMakeUnique<Matrix>(RebuildType(*ele_ty), mat_ty->element_count());
       break;
     }
     case Type::kImage: {
       const Image* image_ty = type.AsImage();
       const Type* ele_ty = image_ty->sampled_type();
       rebuilt_ty =
-          MakeUnique<Image>(RebuildType(*ele_ty), image_ty->dim(),
-                            image_ty->depth(), image_ty->is_arrayed(),
-                            image_ty->is_multisampled(), image_ty->sampled(),
-                            image_ty->format(), image_ty->access_qualifier());
+          CAMakeUnique<Image>(RebuildType(*ele_ty), image_ty->dim(),
+                              image_ty->depth(), image_ty->is_arrayed(),
+                              image_ty->is_multisampled(), image_ty->sampled(),
+                              image_ty->format(), image_ty->access_qualifier());
       break;
     }
     case Type::kSampledImage: {
       const SampledImage* image_ty = type.AsSampledImage();
       const Type* ele_ty = image_ty->image_type();
-      rebuilt_ty = MakeUnique<SampledImage>(RebuildType(*ele_ty));
+      rebuilt_ty = CAMakeUnique<SampledImage>(RebuildType(*ele_ty));
       break;
     }
     case Type::kArray: {
       const Array* array_ty = type.AsArray();
       const Type* ele_ty = array_ty->element_type();
       rebuilt_ty =
-          MakeUnique<Array>(RebuildType(*ele_ty), array_ty->LengthId());
+          CAMakeUnique<Array>(RebuildType(*ele_ty), array_ty->LengthId());
       break;
     }
     case Type::kRuntimeArray: {
       const RuntimeArray* array_ty = type.AsRuntimeArray();
       const Type* ele_ty = array_ty->element_type();
-      rebuilt_ty = MakeUnique<RuntimeArray>(RebuildType(*ele_ty));
+      rebuilt_ty = CAMakeUnique<RuntimeArray>(RebuildType(*ele_ty));
       break;
     }
     case Type::kStruct: {
@@ -516,7 +517,7 @@ Type* TypeManager::RebuildType(const Type& type) {
       for (const auto* ele_ty : struct_ty->element_types()) {
         subtypes.push_back(RebuildType(*ele_ty));
       }
-      rebuilt_ty = MakeUnique<Struct>(subtypes);
+      rebuilt_ty = CAMakeUnique<Struct>(subtypes);
       Struct* rebuilt_struct = rebuilt_ty->AsStruct();
       for (auto pair : struct_ty->element_decorations()) {
         uint32_t index = pair.first;
@@ -531,8 +532,8 @@ Type* TypeManager::RebuildType(const Type& type) {
     case Type::kPointer: {
       const Pointer* pointer_ty = type.AsPointer();
       const Type* ele_ty = pointer_ty->pointee_type();
-      rebuilt_ty = MakeUnique<Pointer>(RebuildType(*ele_ty),
-                                       pointer_ty->storage_class());
+      rebuilt_ty = CAMakeUnique<Pointer>(RebuildType(*ele_ty),
+                                         pointer_ty->storage_class());
       break;
     }
     case Type::kFunction: {
@@ -543,13 +544,13 @@ Type* TypeManager::RebuildType(const Type& type) {
       for (const auto* param_ty : function_ty->param_types()) {
         param_types.push_back(RebuildType(*param_ty));
       }
-      rebuilt_ty = MakeUnique<Function>(RebuildType(*ret_ty), param_types);
+      rebuilt_ty = CAMakeUnique<Function>(RebuildType(*ret_ty), param_types);
       break;
     }
     case Type::kForwardPointer: {
       const ForwardPointer* forward_ptr_ty = type.AsForwardPointer();
-      rebuilt_ty = MakeUnique<ForwardPointer>(forward_ptr_ty->target_id(),
-                                              forward_ptr_ty->storage_class());
+      rebuilt_ty = CAMakeUnique<ForwardPointer>(
+          forward_ptr_ty->target_id(), forward_ptr_ty->storage_class());
       const Pointer* target_ptr = forward_ptr_ty->target_pointer();
       if (target_ptr) {
         rebuilt_ty->AsForwardPointer()->SetTargetPointer(
@@ -589,35 +590,35 @@ Type* TypeManager::GetRegisteredType(const Type* type) {
 Type* TypeManager::RecordIfTypeDefinition(const Instruction& inst) {
   if (!IsTypeInst(inst.opcode())) return nullptr;
 
-  Type* type = nullptr;
+  CAUniquePtr<Type> type = nullptr;
   switch (inst.opcode()) {
     case SpvOpTypeVoid:
-      type = new Void();
+      type = CAMakeUnique<Void>();
       break;
     case SpvOpTypeBool:
-      type = new Bool();
+      type = CAMakeUnique<Bool>();
       break;
     case SpvOpTypeInt:
-      type = new Integer(inst.GetSingleWordInOperand(0),
-                         inst.GetSingleWordInOperand(1));
+      type = CAMakeUnique<Integer>(inst.GetSingleWordInOperand(0),
+                                   inst.GetSingleWordInOperand(1));
       break;
     case SpvOpTypeFloat:
-      type = new Float(inst.GetSingleWordInOperand(0));
+      type = CAMakeUnique<Float>(inst.GetSingleWordInOperand(0));
       break;
     case SpvOpTypeVector:
-      type = new Vector(GetType(inst.GetSingleWordInOperand(0)),
-                        inst.GetSingleWordInOperand(1));
+      type = CAMakeUnique<Vector>(GetType(inst.GetSingleWordInOperand(0)),
+                                  inst.GetSingleWordInOperand(1));
       break;
     case SpvOpTypeMatrix:
-      type = new Matrix(GetType(inst.GetSingleWordInOperand(0)),
-                        inst.GetSingleWordInOperand(1));
+      type = CAMakeUnique<Matrix>(GetType(inst.GetSingleWordInOperand(0)),
+                                  inst.GetSingleWordInOperand(1));
       break;
     case SpvOpTypeImage: {
       const SpvAccessQualifier access =
           inst.NumInOperands() < 8
               ? SpvAccessQualifierReadOnly
               : static_cast<SpvAccessQualifier>(inst.GetSingleWordInOperand(7));
-      type = new Image(
+      type = CAMakeUnique<Image>(
           GetType(inst.GetSingleWordInOperand(0)),
           static_cast<SpvDim>(inst.GetSingleWordInOperand(1)),
           inst.GetSingleWordInOperand(2), inst.GetSingleWordInOperand(3) == 1,
@@ -625,26 +626,30 @@ Type* TypeManager::RecordIfTypeDefinition(const Instruction& inst) {
           static_cast<SpvImageFormat>(inst.GetSingleWordInOperand(6)), access);
     } break;
     case SpvOpTypeSampler:
-      type = new Sampler();
+      type = CAMakeUnique<Sampler>();
       break;
     case SpvOpTypeSampledImage:
-      type = new SampledImage(GetType(inst.GetSingleWordInOperand(0)));
+      type =
+          CAMakeUnique<SampledImage>(GetType(inst.GetSingleWordInOperand(0)));
       break;
     case SpvOpTypeArray:
-      type = new Array(GetType(inst.GetSingleWordInOperand(0)),
-                       inst.GetSingleWordInOperand(1));
+      type = CAMakeUnique<Array>(GetType(inst.GetSingleWordInOperand(0)),
+                                 inst.GetSingleWordInOperand(1));
       if (id_to_incomplete_type_.count(inst.GetSingleWordInOperand(0))) {
-        incomplete_types_.emplace_back(inst.result_id(), type);
-        id_to_incomplete_type_[inst.result_id()] = type;
-        return type;
+        Type* typePtr = type.get();
+        incomplete_types_.emplace_back(inst.result_id(), std::move(type));
+        id_to_incomplete_type_[inst.result_id()] = typePtr;
+        return typePtr;
       }
       break;
     case SpvOpTypeRuntimeArray:
-      type = new RuntimeArray(GetType(inst.GetSingleWordInOperand(0)));
+      type =
+          CAMakeUnique<RuntimeArray>(GetType(inst.GetSingleWordInOperand(0)));
       if (id_to_incomplete_type_.count(inst.GetSingleWordInOperand(0))) {
-        incomplete_types_.emplace_back(inst.result_id(), type);
-        id_to_incomplete_type_[inst.result_id()] = type;
-        return type;
+        Type* typePtr = type.get();
+        incomplete_types_.emplace_back(inst.result_id(), std::move(type));
+        id_to_incomplete_type_[inst.result_id()] = typePtr;
+        return typePtr;
       }
       break;
     case SpvOpTypeStruct: {
@@ -657,28 +662,30 @@ Type* TypeManager::RecordIfTypeDefinition(const Instruction& inst) {
           incomplete_type = true;
         }
       }
-      type = new Struct(element_types);
+      type = CAMakeUnique<Struct>(element_types);
 
       if (incomplete_type) {
-        incomplete_types_.emplace_back(inst.result_id(), type);
-        id_to_incomplete_type_[inst.result_id()] = type;
-        return type;
+        Type* typePtr = type.get();
+        incomplete_types_.emplace_back(inst.result_id(), std::move(type));
+        id_to_incomplete_type_[inst.result_id()] = typePtr;
+        return typePtr;
       }
     } break;
     case SpvOpTypeOpaque: {
       const uint32_t* data = inst.GetInOperand(0).words.data();
-      type = new Opaque(reinterpret_cast<const char*>(data));
+      type = CAMakeUnique<Opaque>(reinterpret_cast<const char*>(data));
     } break;
     case SpvOpTypePointer: {
       uint32_t pointee_type_id = inst.GetSingleWordInOperand(1);
-      type = new Pointer(
+      type = CAMakeUnique<Pointer>(
           GetType(pointee_type_id),
           static_cast<SpvStorageClass>(inst.GetSingleWordInOperand(0)));
 
       if (id_to_incomplete_type_.count(pointee_type_id)) {
-        incomplete_types_.emplace_back(inst.result_id(), type);
-        id_to_incomplete_type_[inst.result_id()] = type;
-        return type;
+        Type* typePtr = type.get();
+        incomplete_types_.emplace_back(inst.result_id(), std::move(type));
+        id_to_incomplete_type_[inst.result_id()] = typePtr;
+        return typePtr;
       }
       id_to_incomplete_type_.erase(inst.result_id());
 
@@ -699,44 +706,47 @@ Type* TypeManager::RecordIfTypeDefinition(const Instruction& inst) {
         }
       }
 
-      type = new Function(return_type, param_types);
+      type = CAMakeUnique<Function>(return_type, param_types);
 
       if (incomplete_type) {
-        incomplete_types_.emplace_back(inst.result_id(), type);
-        id_to_incomplete_type_[inst.result_id()] = type;
-        return type;
+        Type* typePtr = type.get();
+        incomplete_types_.emplace_back(inst.result_id(), std::move(type));
+        id_to_incomplete_type_[inst.result_id()] = typePtr;
+        return typePtr;
       }
     } break;
     case SpvOpTypeEvent:
-      type = new Event();
+      type = CAMakeUnique<Event>();
       break;
     case SpvOpTypeDeviceEvent:
-      type = new DeviceEvent();
+      type = CAMakeUnique<DeviceEvent>();
       break;
     case SpvOpTypeReserveId:
-      type = new ReserveId();
+      type = CAMakeUnique<ReserveId>();
       break;
     case SpvOpTypeQueue:
-      type = new Queue();
+      type = CAMakeUnique<Queue>();
       break;
     case SpvOpTypePipe:
-      type = new Pipe(
+      type = CAMakeUnique<Pipe>(
           static_cast<SpvAccessQualifier>(inst.GetSingleWordInOperand(0)));
       break;
     case SpvOpTypeForwardPointer: {
       // Handling of forward pointers is different from the other types.
       uint32_t target_id = inst.GetSingleWordInOperand(0);
-      type = new ForwardPointer(target_id, static_cast<SpvStorageClass>(
-                                               inst.GetSingleWordInOperand(1)));
-      incomplete_types_.emplace_back(target_id, type);
-      id_to_incomplete_type_[target_id] = type;
-      return type;
+      type = CAMakeUnique<ForwardPointer>(
+          target_id,
+          static_cast<SpvStorageClass>(inst.GetSingleWordInOperand(1)));
+      Type* typePtr = type.get();
+      incomplete_types_.emplace_back(target_id, std::move(type));
+      id_to_incomplete_type_[target_id] = typePtr;
+      return typePtr;
     }
     case SpvOpTypePipeStorage:
-      type = new PipeStorage();
+      type = CAMakeUnique<PipeStorage>();
       break;
     case SpvOpTypeNamedBarrier:
-      type = new NamedBarrier();
+      type = CAMakeUnique<NamedBarrier>();
       break;
     default:
       SPIRV_UNIMPLEMENTED(consumer_, "unhandled type");
@@ -750,13 +760,13 @@ Type* TypeManager::RecordIfTypeDefinition(const Instruction& inst) {
   auto decorations =
       context()->get_decoration_mgr()->GetDecorationsFor(id, true);
   for (auto dec : decorations) {
-    AttachDecoration(*dec, type);
+    AttachDecoration(*dec, type.get());
   }
-  std::unique_ptr<Type> unique(type);
-  auto pair = type_pool_.insert(std::move(unique));
-  id_to_type_[id] = pair.first->get();
-  type_to_id_[pair.first->get()] = id;
-  return type;
+  auto pair = type_pool_.insert(std::move(type));
+  Type* typePtr = pair.first->get();
+  id_to_type_[id] = typePtr;
+  type_to_id_[typePtr] = id;
+  return typePtr;
 }
 
 void TypeManager::AttachDecoration(const Instruction& inst, Type* type) {

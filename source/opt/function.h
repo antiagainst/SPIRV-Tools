@@ -17,11 +17,11 @@
 
 #include <algorithm>
 #include <functional>
-#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
+#include "source/opt/allocator.h"
 #include "source/opt/basic_block.h"
 #include "source/opt/instruction.h"
 #include "source/opt/iterator.h"
@@ -41,7 +41,7 @@ class Function {
 
   // Creates a function instance declared by the given OpFunction instruction
   // |def_inst|.
-  inline explicit Function(std::unique_ptr<Instruction> def_inst);
+  inline explicit Function(CAUniquePtr<Instruction> def_inst);
 
   explicit Function(const Function& f) = delete;
 
@@ -49,17 +49,17 @@ class Function {
   //
   // The parent module will default to null and needs to be explicitly set by
   // the user.
-  Function* Clone(IRContext*) const;
+  CAUniquePtr<Function> Clone(IRContext*) const;
   // The OpFunction instruction that begins the definition of this function.
   Instruction& DefInst() { return *def_inst_; }
   const Instruction& DefInst() const { return *def_inst_; }
 
   // Appends a parameter to this function.
-  inline void AddParameter(std::unique_ptr<Instruction> p);
+  inline void AddParameter(CAUniquePtr<Instruction> p);
   // Appends a basic block to this function.
-  inline void AddBasicBlock(std::unique_ptr<BasicBlock> b);
+  inline void AddBasicBlock(CAUniquePtr<BasicBlock> b);
   // Appends a basic block to this function at the position |ip|.
-  inline void AddBasicBlock(std::unique_ptr<BasicBlock> b, iterator ip);
+  inline void AddBasicBlock(CAUniquePtr<BasicBlock> b, iterator ip);
   template <typename T>
   inline void AddBasicBlocks(T begin, T end, iterator ip);
 
@@ -71,7 +71,7 @@ class Function {
   inline void RemoveEmptyBlocks();
 
   // Saves the given function end instruction.
-  inline void SetFunctionEnd(std::unique_ptr<Instruction> end_inst);
+  inline void SetFunctionEnd(CAUniquePtr<Instruction> end_inst);
 
   // Returns the given function end instruction.
   inline Instruction* EndInst() { return end_inst_.get(); }
@@ -84,7 +84,7 @@ class Function {
   inline uint32_t type_id() const { return def_inst_->type_id(); }
 
   // Returns the entry basic block for this function.
-  const std::unique_ptr<BasicBlock>& entry() const { return blocks_.front(); }
+  const CAUniquePtr<BasicBlock>& entry() const { return blocks_.front(); }
 
   iterator begin() { return iterator(&blocks_, blocks_.begin()); }
   iterator end() { return iterator(&blocks_, blocks_.end()); }
@@ -116,7 +116,7 @@ class Function {
   void ForEachParam(const std::function<void(const Instruction*)>& f,
                     bool run_on_debug_line_insts = false) const;
 
-  BasicBlock* InsertBasicBlockAfter(std::unique_ptr<BasicBlock>&& new_block,
+  BasicBlock* InsertBasicBlockAfter(CAUniquePtr<BasicBlock>&& new_block,
                                     BasicBlock* position);
 
   // Pretty-prints all the basic blocks in this function into a std::string.
@@ -131,31 +131,30 @@ class Function {
 
  private:
   // The OpFunction instruction that begins the definition of this function.
-  std::unique_ptr<Instruction> def_inst_;
+  CAUniquePtr<Instruction> def_inst_;
   // All parameters to this function.
-  std::vector<std::unique_ptr<Instruction>> params_;
+  std::vector<CAUniquePtr<Instruction>> params_;
   // All basic blocks inside this function in specification order
-  std::vector<std::unique_ptr<BasicBlock>> blocks_;
+  std::vector<CAUniquePtr<BasicBlock>> blocks_;
   // The OpFunctionEnd instruction.
-  std::unique_ptr<Instruction> end_inst_;
+  CAUniquePtr<Instruction> end_inst_;
 };
 
 // Pretty-prints |func| to |str|. Returns |str|.
 std::ostream& operator<<(std::ostream& str, const Function& func);
 
-inline Function::Function(std::unique_ptr<Instruction> def_inst)
+inline Function::Function(CAUniquePtr<Instruction> def_inst)
     : def_inst_(std::move(def_inst)), end_inst_() {}
 
-inline void Function::AddParameter(std::unique_ptr<Instruction> p) {
+inline void Function::AddParameter(CAUniquePtr<Instruction> p) {
   params_.emplace_back(std::move(p));
 }
 
-inline void Function::AddBasicBlock(std::unique_ptr<BasicBlock> b) {
+inline void Function::AddBasicBlock(CAUniquePtr<BasicBlock> b) {
   AddBasicBlock(std::move(b), end());
 }
 
-inline void Function::AddBasicBlock(std::unique_ptr<BasicBlock> b,
-                                    iterator ip) {
+inline void Function::AddBasicBlock(CAUniquePtr<BasicBlock> b, iterator ip) {
   ip.InsertBefore(std::move(b));
 }
 
@@ -178,13 +177,13 @@ inline void Function::MoveBasicBlockToAfter(uint32_t id, BasicBlock* ip) {
 inline void Function::RemoveEmptyBlocks() {
   auto first_empty =
       std::remove_if(std::begin(blocks_), std::end(blocks_),
-                     [](const std::unique_ptr<BasicBlock>& bb) -> bool {
+                     [](const CAUniquePtr<BasicBlock>& bb) -> bool {
                        return bb->GetLabelInst()->opcode() == SpvOpNop;
                      });
   blocks_.erase(first_empty, std::end(blocks_));
 }
 
-inline void Function::SetFunctionEnd(std::unique_ptr<Instruction> end_inst) {
+inline void Function::SetFunctionEnd(CAUniquePtr<Instruction> end_inst) {
   end_inst_ = std::move(end_inst);
 }
 

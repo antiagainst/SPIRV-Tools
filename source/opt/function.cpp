@@ -20,24 +20,23 @@
 namespace spvtools {
 namespace opt {
 
-Function* Function::Clone(IRContext* ctx) const {
-  Function* clone =
-      new Function(std::unique_ptr<Instruction>(DefInst().Clone(ctx)));
+CAUniquePtr<Function> Function::Clone(IRContext* ctx) const {
+  auto clone = CAMakeUnique<Function>(DefInst().Clone(ctx));
   clone->params_.reserve(params_.size());
   ForEachParam(
-      [clone, ctx](const Instruction* inst) {
-        clone->AddParameter(std::unique_ptr<Instruction>(inst->Clone(ctx)));
+      [&clone, ctx](const Instruction* inst) {
+        clone->AddParameter(inst->Clone(ctx));
       },
       true);
 
   clone->blocks_.reserve(blocks_.size());
   for (const auto& b : blocks_) {
-    std::unique_ptr<BasicBlock> bb(b->Clone(ctx));
-    bb->SetParent(clone);
+    auto bb = b->Clone(ctx);
+    bb->SetParent(clone.get());
     clone->AddBasicBlock(std::move(bb));
   }
 
-  clone->SetFunctionEnd(std::unique_ptr<Instruction>(EndInst()->Clone(ctx)));
+  clone->SetFunctionEnd(EndInst()->Clone(ctx));
   return clone;
 }
 
@@ -75,8 +74,8 @@ void Function::ForEachParam(const std::function<void(const Instruction*)>& f,
         ->ForEachInst(f, run_on_debug_line_insts);
 }
 
-BasicBlock* Function::InsertBasicBlockAfter(
-    std::unique_ptr<BasicBlock>&& new_block, BasicBlock* position) {
+BasicBlock* Function::InsertBasicBlockAfter(CAUniquePtr<BasicBlock>&& new_block,
+                                            BasicBlock* position) {
   for (auto bb_iter = begin(); bb_iter != end(); ++bb_iter) {
     if (&*bb_iter == position) {
       new_block->SetParent(this);

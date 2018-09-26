@@ -94,7 +94,7 @@ void PrivateToLocalPass::MoveVariable(Instruction* variable,
   // The variable needs to be removed from the global section, and placed in the
   // header of the function.  First step remove from the global list.
   variable->RemoveFromList();
-  std::unique_ptr<Instruction> var(variable);  // Take ownership.
+  CAUniquePtr<Instruction> var(variable);  // Take ownership.
   context()->ForgetUses(variable);
 
   // Update the storage class of the variable.

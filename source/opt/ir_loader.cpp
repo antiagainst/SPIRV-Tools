@@ -37,8 +37,8 @@ bool IrLoader::AddInstruction(const spv_parsed_instruction_t* inst) {
     return true;
   }
 
-  std::unique_ptr<Instruction> spv_inst(
-      new Instruction(module()->context(), *inst, std::move(dbg_line_info_)));
+  auto spv_inst = CAMakeUnique<Instruction>(module()->context(), *inst,
+                                            std::move(dbg_line_info_));
   dbg_line_info_.clear();
 
   const char* src = source_.c_str();
@@ -51,7 +51,7 @@ bool IrLoader::AddInstruction(const spv_parsed_instruction_t* inst) {
       Error(consumer_, src, loc, "function inside function");
       return false;
     }
-    function_ = MakeUnique<Function>(std::move(spv_inst));
+    function_ = CAMakeUnique<Function>(std::move(spv_inst));
   } else if (opcode == SpvOpFunctionEnd) {
     if (function_ == nullptr) {
       Error(consumer_, src, loc,
@@ -74,7 +74,7 @@ bool IrLoader::AddInstruction(const spv_parsed_instruction_t* inst) {
       Error(consumer_, src, loc, "OpLabel inside basic block");
       return false;
     }
-    block_ = MakeUnique<BasicBlock>(std::move(spv_inst));
+    block_ = CAMakeUnique<BasicBlock>(std::move(spv_inst));
   } else if (IsTerminatorInst(opcode)) {
     if (function_ == nullptr) {
       Error(consumer_, src, loc, "terminator instruction outside function");

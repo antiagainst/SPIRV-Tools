@@ -20,6 +20,7 @@
 #include <utility>
 #include <vector>
 
+#include "source/opt/allocator.h"
 #include "source/opt/function.h"
 #include "source/opt/instruction.h"
 #include "source/opt/iterator.h"
@@ -71,48 +72,48 @@ class Module {
   uint32_t TakeNextIdBound();
 
   // Appends a capability instruction to this module.
-  inline void AddCapability(std::unique_ptr<Instruction> c);
+  inline void AddCapability(CAUniquePtr<Instruction> c);
 
   // Appends an extension instruction to this module.
-  inline void AddExtension(std::unique_ptr<Instruction> e);
+  inline void AddExtension(CAUniquePtr<Instruction> e);
 
   // Appends an extended instruction set instruction to this module.
-  inline void AddExtInstImport(std::unique_ptr<Instruction> e);
+  inline void AddExtInstImport(CAUniquePtr<Instruction> e);
 
   // Set the memory model for this module.
-  inline void SetMemoryModel(std::unique_ptr<Instruction> m);
+  inline void SetMemoryModel(CAUniquePtr<Instruction> m);
 
   // Appends an entry point instruction to this module.
-  inline void AddEntryPoint(std::unique_ptr<Instruction> e);
+  inline void AddEntryPoint(CAUniquePtr<Instruction> e);
 
   // Appends an execution mode instruction to this module.
-  inline void AddExecutionMode(std::unique_ptr<Instruction> e);
+  inline void AddExecutionMode(CAUniquePtr<Instruction> e);
 
   // Appends a debug 1 instruction (excluding OpLine & OpNoLine) to this module.
   // "debug 1" instructions are the ones in layout section 7.a), see section
   // 2.4 Logical Layout of a Module from the SPIR-V specification.
-  inline void AddDebug1Inst(std::unique_ptr<Instruction> d);
+  inline void AddDebug1Inst(CAUniquePtr<Instruction> d);
 
   // Appends a debug 2 instruction (excluding OpLine & OpNoLine) to this module.
   // "debug 2" instructions are the ones in layout section 7.b), see section
   // 2.4 Logical Layout of a Module from the SPIR-V specification.
-  inline void AddDebug2Inst(std::unique_ptr<Instruction> d);
+  inline void AddDebug2Inst(CAUniquePtr<Instruction> d);
 
   // Appends a debug 3 instruction (OpModuleProcessed) to this module.
   // This is due to decision by the SPIR Working Group, pending publication.
-  inline void AddDebug3Inst(std::unique_ptr<Instruction> d);
+  inline void AddDebug3Inst(CAUniquePtr<Instruction> d);
 
   // Appends an annotation instruction to this module.
-  inline void AddAnnotationInst(std::unique_ptr<Instruction> a);
+  inline void AddAnnotationInst(CAUniquePtr<Instruction> a);
 
   // Appends a type-declaration instruction to this module.
-  inline void AddType(std::unique_ptr<Instruction> t);
+  inline void AddType(CAUniquePtr<Instruction> t);
 
   // Appends a constant, global variable, or OpUndef instruction to this module.
-  inline void AddGlobalValue(std::unique_ptr<Instruction> v);
+  inline void AddGlobalValue(CAUniquePtr<Instruction> v);
 
   // Appends a function to this module.
-  inline void AddFunction(std::unique_ptr<Function> f);
+  inline void AddFunction(CAUniquePtr<Function> f);
 
   // Returns a vector of pointers to type-declaration instructions in this
   // module.
@@ -269,7 +270,7 @@ class Module {
   InstructionList extensions_;
   InstructionList ext_inst_imports_;
   // A module only has one memory model instruction.
-  std::unique_ptr<Instruction> memory_model_;
+  CAUniquePtr<Instruction> memory_model_;
   InstructionList entry_points_;
   InstructionList execution_modes_;
   InstructionList debugs1_;
@@ -278,61 +279,61 @@ class Module {
   InstructionList annotations_;
   // Type declarations, constants, and global variable declarations.
   InstructionList types_values_;
-  std::vector<std::unique_ptr<Function>> functions_;
+  std::vector<CAUniquePtr<Function>> functions_;
 };
 
 // Pretty-prints |module| to |str|. Returns |str|.
 std::ostream& operator<<(std::ostream& str, const Module& module);
 
-inline void Module::AddCapability(std::unique_ptr<Instruction> c) {
+inline void Module::AddCapability(CAUniquePtr<Instruction> c) {
   capabilities_.push_back(std::move(c));
 }
 
-inline void Module::AddExtension(std::unique_ptr<Instruction> e) {
+inline void Module::AddExtension(CAUniquePtr<Instruction> e) {
   extensions_.push_back(std::move(e));
 }
 
-inline void Module::AddExtInstImport(std::unique_ptr<Instruction> e) {
+inline void Module::AddExtInstImport(CAUniquePtr<Instruction> e) {
   ext_inst_imports_.push_back(std::move(e));
 }
 
-inline void Module::SetMemoryModel(std::unique_ptr<Instruction> m) {
+inline void Module::SetMemoryModel(CAUniquePtr<Instruction> m) {
   memory_model_ = std::move(m);
 }
 
-inline void Module::AddEntryPoint(std::unique_ptr<Instruction> e) {
+inline void Module::AddEntryPoint(CAUniquePtr<Instruction> e) {
   entry_points_.push_back(std::move(e));
 }
 
-inline void Module::AddExecutionMode(std::unique_ptr<Instruction> e) {
+inline void Module::AddExecutionMode(CAUniquePtr<Instruction> e) {
   execution_modes_.push_back(std::move(e));
 }
 
-inline void Module::AddDebug1Inst(std::unique_ptr<Instruction> d) {
+inline void Module::AddDebug1Inst(CAUniquePtr<Instruction> d) {
   debugs1_.push_back(std::move(d));
 }
 
-inline void Module::AddDebug2Inst(std::unique_ptr<Instruction> d) {
+inline void Module::AddDebug2Inst(CAUniquePtr<Instruction> d) {
   debugs2_.push_back(std::move(d));
 }
 
-inline void Module::AddDebug3Inst(std::unique_ptr<Instruction> d) {
+inline void Module::AddDebug3Inst(CAUniquePtr<Instruction> d) {
   debugs3_.push_back(std::move(d));
 }
 
-inline void Module::AddAnnotationInst(std::unique_ptr<Instruction> a) {
+inline void Module::AddAnnotationInst(CAUniquePtr<Instruction> a) {
   annotations_.push_back(std::move(a));
 }
 
-inline void Module::AddType(std::unique_ptr<Instruction> t) {
+inline void Module::AddType(CAUniquePtr<Instruction> t) {
   types_values_.push_back(std::move(t));
 }
 
-inline void Module::AddGlobalValue(std::unique_ptr<Instruction> v) {
+inline void Module::AddGlobalValue(CAUniquePtr<Instruction> v) {
   types_values_.push_back(std::move(v));
 }
 
-inline void Module::AddFunction(std::unique_ptr<Function> f) {
+inline void Module::AddFunction(CAUniquePtr<Function> f) {
   functions_.emplace_back(std::move(f));
 }
 

@@ -18,13 +18,11 @@
 #define SOURCE_OPT_LOCAL_ACCESS_CHAIN_CONVERT_PASS_H_
 
 #include <algorithm>
-#include <map>
-#include <memory>
-#include <queue>
 #include <string>
 #include <utility>
 #include <vector>
 
+#include "source/opt/allocator.h"
 #include "source/opt/basic_block.h"
 #include "source/opt/def_use_manager.h"
 #include "source/opt/mem_pass.h"
@@ -63,13 +61,13 @@ class LocalAccessChainConvertPass : public MemPass {
   // Append to |newInsts|.
   void BuildAndAppendInst(SpvOp opcode, uint32_t typeId, uint32_t resultId,
                           const std::vector<Operand>& in_opnds,
-                          std::vector<std::unique_ptr<Instruction>>* newInsts);
+                          std::vector<CAUniquePtr<Instruction>>* newInsts);
 
   // Build load of variable in |ptrInst| and append to |newInsts|.
   // Return var in |varId| and its pointee type in |varPteTypeId|.
   uint32_t BuildAndAppendVarLoad(
       const Instruction* ptrInst, uint32_t* varId, uint32_t* varPteTypeId,
-      std::vector<std::unique_ptr<Instruction>>* newInsts);
+      std::vector<CAUniquePtr<Instruction>>* newInsts);
 
   // Append literal integer operands to |in_opnds| corresponding to constant
   // integer operands from access chain |ptrInst|. Assumes all indices in
@@ -82,7 +80,7 @@ class LocalAccessChainConvertPass : public MemPass {
   // Append to |newInsts|.
   void GenAccessChainStoreReplacement(
       const Instruction* ptrInst, uint32_t valId,
-      std::vector<std::unique_ptr<Instruction>>* newInsts);
+      std::vector<CAUniquePtr<Instruction>>* newInsts);
 
   // For the (constant index) access chain |address_inst|, create an
   // equivalent load and extract that replaces |original_load|.  The result id

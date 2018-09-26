@@ -15,10 +15,10 @@
 #ifndef SOURCE_OPT_IR_LOADER_H_
 #define SOURCE_OPT_IR_LOADER_H_
 
-#include <memory>
 #include <string>
 #include <vector>
 
+#include "source/opt/allocator.h"
 #include "source/opt/basic_block.h"
 #include "source/opt/instruction.h"
 #include "source/opt/module.h"
@@ -73,9 +73,9 @@ class IrLoader {
   // The last used instruction index.
   uint32_t inst_index_;
   // The current Function under construction.
-  std::unique_ptr<Function> function_;
+  CAUniquePtr<Function> function_;
   // The current BasicBlock under construction.
-  std::unique_ptr<BasicBlock> block_;
+  CAUniquePtr<BasicBlock> block_;
   // Line related debug instructions accumulated thus far.
   std::vector<Instruction> dbg_line_info_;
 };

@@ -35,16 +35,16 @@ const uint32_t kTypeIntWidthInIdx = 0;
 void LocalAccessChainConvertPass::BuildAndAppendInst(
     SpvOp opcode, uint32_t typeId, uint32_t resultId,
     const std::vector<Operand>& in_opnds,
-    std::vector<std::unique_ptr<Instruction>>* newInsts) {
-  std::unique_ptr<Instruction> newInst(
-      new Instruction(context(), opcode, typeId, resultId, in_opnds));
+    std::vector<CAUniquePtr<Instruction>>* newInsts) {
+  auto newInst =
+      CAMakeUnique<Instruction>(context(), opcode, typeId, resultId, in_opnds);
   get_def_use_mgr()->AnalyzeInstDefUse(&*newInst);
   newInsts->emplace_back(std::move(newInst));
 }
 
 uint32_t LocalAccessChainConvertPass::BuildAndAppendVarLoad(
     const Instruction* ptrInst, uint32_t* varId, uint32_t* varPteTypeId,
-    std::vector<std::unique_ptr<Instruction>>* newInsts) {
+    std::vector<CAUniquePtr<Instruction>>* newInsts) {
   const uint32_t ldResultId = TakeNextId();
   *varId = ptrInst->GetSingleWordInOperand(kAccessChainPtrIdInIdx);
   const Instruction* varInst = get_def_use_mgr()->GetDef(*varId);
@@ -73,7 +73,7 @@ void LocalAccessChainConvertPass::AppendConstantOperands(
 void LocalAccessChainConvertPass::ReplaceAccessChainLoad(
     const Instruction* address_inst, Instruction* original_load) {
   // Build and append load of variable in ptrInst
-  std::vector<std::unique_ptr<Instruction>> new_inst;
+  std::vector<CAUniquePtr<Instruction>> new_inst;
   uint32_t varId;
   uint32_t varPteTypeId;
   const uint32_t ldResultId =
@@ -99,7 +99,7 @@ void LocalAccessChainConvertPass::ReplaceAccessChainLoad(
 
 void LocalAccessChainConvertPass::GenAccessChainStoreReplacement(
     const Instruction* ptrInst, uint32_t valId,
-    std::vector<std::unique_ptr<Instruction>>* newInsts) {
+    std::vector<CAUniquePtr<Instruction>>* newInsts) {
   // Build and append load of variable in ptrInst
   uint32_t varId;
   uint32_t varPteTypeId;
@@ -212,7 +212,7 @@ bool LocalAccessChainConvertPass::ConvertLocalAccessChains(Function* func) {
           Instruction* ptrInst = GetPtr(&*ii, &varId);
           if (!IsNonPtrAccessChain(ptrInst->opcode())) break;
           if (!IsTargetVar(varId)) break;
-          std::vector<std::unique_ptr<Instruction>> newInsts;
+          std::vector<CAUniquePtr<Instruction>> newInsts;
           ReplaceAccessChainLoad(ptrInst, &*ii);
           modified = true;
         } break;
@@ -221,7 +221,7 @@ bool LocalAccessChainConvertPass::ConvertLocalAccessChains(Function* func) {
           Instruction* ptrInst = GetPtr(&*ii, &varId);
           if (!IsNonPtrAccessChain(ptrInst->opcode())) break;
           if (!IsTargetVar(varId)) break;
-          std::vector<std::unique_ptr<Instruction>> newInsts;
+          std::vector<CAUniquePtr<Instruction>> newInsts;
           uint32_t valId = ii->GetSingleWordInOperand(kStoreValIdInIdx);
           GenAccessChainStoreReplacement(ptrInst, valId, &newInsts);
           dead_instructions.push_back(&*ii);

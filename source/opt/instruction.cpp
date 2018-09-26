@@ -106,8 +106,8 @@ Instruction& Instruction::operator=(Instruction&& that) {
   return *this;
 }
 
-Instruction* Instruction::Clone(IRContext* c) const {
-  Instruction* clone = new Instruction(c);
+CAUniquePtr<Instruction> Instruction::Clone(IRContext* c) const {
+  auto clone = CAMakeUnique<Instruction>(c);
   clone->opcode_ = opcode_;
   clone->has_type_id_ = has_type_id_;
   clone->has_result_id_ = has_result_id_;
@@ -394,7 +394,7 @@ uint32_t Instruction::GetTypeComponent(uint32_t element) const {
 }
 
 Instruction* Instruction::InsertBefore(
-    std::vector<std::unique_ptr<Instruction>>&& list) {
+    std::vector<CAUniquePtr<Instruction>>&& list) {
   Instruction* first_node = list.front().get();
   for (auto& i : list) {
     i.release()->InsertBefore(this);
@@ -403,7 +403,7 @@ Instruction* Instruction::InsertBefore(
   return first_node;
 }
 
-Instruction* Instruction::InsertBefore(std::unique_ptr<Instruction>&& i) {
+Instruction* Instruction::InsertBefore(CAUniquePtr<Instruction>&& i) {
   i.get()->InsertBefore(this);
   return i.release();
 }

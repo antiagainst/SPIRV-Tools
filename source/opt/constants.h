@@ -60,7 +60,7 @@ class Constant {
   virtual ~Constant() {}
 
   // Make a deep copy of this constant.
-  virtual std::unique_ptr<Constant> Copy() const = 0;
+  virtual CAUniquePtr<Constant> Copy() const = 0;
 
   // reflections
   virtual ScalarConstant* AsScalarConstant() { return nullptr; }
@@ -204,11 +204,11 @@ class IntConstant : public ScalarConstant {
   }
 
   // Make a copy of this IntConstant instance.
-  std::unique_ptr<IntConstant> CopyIntConstant() const {
-    return MakeUnique<IntConstant>(type_->AsInteger(), words_);
+  CAUniquePtr<IntConstant> CopyIntConstant() const {
+    return CAMakeUnique<IntConstant>(type_->AsInteger(), words_);
   }
-  std::unique_ptr<Constant> Copy() const override {
-    return std::unique_ptr<Constant>(CopyIntConstant().release());
+  CAUniquePtr<Constant> Copy() const override {
+    return CAUniquePtr<Constant>(CopyIntConstant().release());
   }
 };
 
@@ -224,11 +224,11 @@ class FloatConstant : public ScalarConstant {
   const FloatConstant* AsFloatConstant() const override { return this; }
 
   // Make a copy of this FloatConstant instance.
-  std::unique_ptr<FloatConstant> CopyFloatConstant() const {
-    return MakeUnique<FloatConstant>(type_->AsFloat(), words_);
+  CAUniquePtr<FloatConstant> CopyFloatConstant() const {
+    return CAMakeUnique<FloatConstant>(type_->AsFloat(), words_);
   }
-  std::unique_ptr<Constant> Copy() const override {
-    return std::unique_ptr<Constant>(CopyFloatConstant().release());
+  CAUniquePtr<Constant> Copy() const override {
+    return CAUniquePtr<Constant>(CopyFloatConstant().release());
   }
 
   // Returns the float value of |this|.  The type of |this| must be |Float| with
@@ -263,11 +263,11 @@ class BoolConstant : public ScalarConstant {
   const BoolConstant* AsBoolConstant() const override { return this; }
 
   // Make a copy of this BoolConstant instance.
-  std::unique_ptr<BoolConstant> CopyBoolConstant() const {
-    return MakeUnique<BoolConstant>(type_->AsBool(), value_);
+  CAUniquePtr<BoolConstant> CopyBoolConstant() const {
+    return CAMakeUnique<BoolConstant>(type_->AsBool(), value_);
   }
-  std::unique_ptr<Constant> Copy() const override {
-    return std::unique_ptr<Constant>(CopyBoolConstant().release());
+  CAUniquePtr<Constant> Copy() const override {
+    return CAUniquePtr<Constant>(CopyBoolConstant().release());
   }
 
   bool value() const { return value_; }
@@ -322,11 +322,11 @@ class StructConstant : public CompositeConstant {
   const StructConstant* AsStructConstant() const override { return this; }
 
   // Make a copy of this StructConstant instance.
-  std::unique_ptr<StructConstant> CopyStructConstant() const {
-    return MakeUnique<StructConstant>(type_->AsStruct(), components_);
+  CAUniquePtr<StructConstant> CopyStructConstant() const {
+    return CAMakeUnique<StructConstant>(type_->AsStruct(), components_);
   }
-  std::unique_ptr<Constant> Copy() const override {
-    return std::unique_ptr<Constant>(CopyStructConstant().release());
+  CAUniquePtr<Constant> Copy() const override {
+    return CAUniquePtr<Constant>(CopyStructConstant().release());
   }
 };
 
@@ -347,14 +347,14 @@ class VectorConstant : public CompositeConstant {
   const VectorConstant* AsVectorConstant() const override { return this; }
 
   // Make a copy of this VectorConstant instance.
-  std::unique_ptr<VectorConstant> CopyVectorConstant() const {
-    auto another = MakeUnique<VectorConstant>(type_->AsVector());
+  CAUniquePtr<VectorConstant> CopyVectorConstant() const {
+    auto another = CAMakeUnique<VectorConstant>(type_->AsVector());
     another->components_.insert(another->components_.end(), components_.begin(),
                                 components_.end());
     return another;
   }
-  std::unique_ptr<Constant> Copy() const override {
-    return std::unique_ptr<Constant>(CopyVectorConstant().release());
+  CAUniquePtr<Constant> Copy() const override {
+    return CAUniquePtr<Constant>(CopyVectorConstant().release());
   }
 
   const Type* component_type() const { return component_type_; }
@@ -380,14 +380,14 @@ class MatrixConstant : public CompositeConstant {
   const MatrixConstant* AsMatrixConstant() const override { return this; }
 
   // Make a copy of this MatrixConstant instance.
-  std::unique_ptr<MatrixConstant> CopyMatrixConstant() const {
-    auto another = MakeUnique<MatrixConstant>(type_->AsMatrix());
+  CAUniquePtr<MatrixConstant> CopyMatrixConstant() const {
+    auto another = CAMakeUnique<MatrixConstant>(type_->AsMatrix());
     another->components_.insert(another->components_.end(), components_.begin(),
                                 components_.end());
     return another;
   }
-  std::unique_ptr<Constant> Copy() const override {
-    return std::unique_ptr<Constant>(CopyMatrixConstant().release());
+  CAUniquePtr<Constant> Copy() const override {
+    return CAUniquePtr<Constant>(CopyMatrixConstant().release());
   }
 
   const Type* component_type() { return component_type_; }
@@ -409,11 +409,11 @@ class ArrayConstant : public CompositeConstant {
   const ArrayConstant* AsArrayConstant() const override { return this; }
 
   // Make a copy of this ArrayConstant instance.
-  std::unique_ptr<ArrayConstant> CopyArrayConstant() const {
-    return MakeUnique<ArrayConstant>(type_->AsArray(), components_);
+  CAUniquePtr<ArrayConstant> CopyArrayConstant() const {
+    return CAMakeUnique<ArrayConstant>(type_->AsArray(), components_);
   }
-  std::unique_ptr<Constant> Copy() const override {
-    return std::unique_ptr<Constant>(CopyArrayConstant().release());
+  CAUniquePtr<Constant> Copy() const override {
+    return CAUniquePtr<Constant>(CopyArrayConstant().release());
   }
 };
 
@@ -425,11 +425,11 @@ class NullConstant : public Constant {
   const NullConstant* AsNullConstant() const override { return this; }
 
   // Make a copy of this NullConstant instance.
-  std::unique_ptr<NullConstant> CopyNullConstant() const {
-    return MakeUnique<NullConstant>(type_);
+  CAUniquePtr<NullConstant> CopyNullConstant() const {
+    return CAMakeUnique<NullConstant>(type_);
   }
-  std::unique_ptr<Constant> Copy() const override {
-    return std::unique_ptr<Constant>(CopyNullConstant().release());
+  CAUniquePtr<Constant> Copy() const override {
+    return CAUniquePtr<Constant>(CopyNullConstant().release());
   }
   bool IsZero() const override { return true; };
 };
@@ -577,7 +577,7 @@ class ConstantManager {
   // Registers a new constant |cst| in the constant pool. If the constant
   // existed already, it returns a pointer to the previously existing Constant
   // in the pool. Otherwise, it returns |cst|.
-  const Constant* RegisterConstant(std::unique_ptr<Constant> cst) {
+  const Constant* RegisterConstant(CAUniquePtr<Constant> cst) {
     auto ret = const_pool_.insert(cst.get());
     if (ret.second) {
       owned_constants_.emplace_back(std::move(cst));
@@ -635,7 +635,7 @@ class ConstantManager {
   // type, either Bool, Integer or Float. If any of the rules above failed, the
   // creation will fail and nullptr will be returned. If the vector is empty,
   // a NullConstant instance will be created with the given type.
-  std::unique_ptr<Constant> CreateConstant(
+  CAUniquePtr<Constant> CreateConstant(
       const Type* type,
       const std::vector<uint32_t>& literal_words_or_ids) const;
 
@@ -648,9 +648,9 @@ class ConstantManager {
   // |type_id| is specified, it is used as the type of the constant. Otherwise
   // the type of the constant is derived by getting an id from the type manager
   // for |c|.
-  std::unique_ptr<Instruction> CreateInstruction(uint32_t result_id,
-                                                 const Constant* c,
-                                                 uint32_t type_id = 0) const;
+  CAUniquePtr<Instruction> CreateInstruction(uint32_t result_id,
+                                             const Constant* c,
+                                             uint32_t type_id = 0) const;
 
   // Creates an OpConstantComposite instruction with the given result id and
   // the CompositeConst instance which represents a composite constant. Returns
@@ -661,7 +661,7 @@ class ConstantManager {
   // |type_id| is specified, it is used as the type of the constant. Otherwise
   // the type of the constant is derived by getting an id from the type manager
   // for |c|.
-  std::unique_ptr<Instruction> CreateCompositeInstruction(
+  CAUniquePtr<Instruction> CreateCompositeInstruction(
       uint32_t result_id, const CompositeConstant* cc,
       uint32_t type_id = 0) const;
 
@@ -685,7 +685,7 @@ class ConstantManager {
 
   // The constant that are owned by the constant manager.  Every constant in
   // |const_pool_| should be in |owned_constants_| as well.
-  std::vector<std::unique_ptr<Constant>> owned_constants_;
+  std::vector<CAUniquePtr<Constant>> owned_constants_;
 };
 
 }  // namespace analysis

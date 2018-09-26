@@ -26,6 +26,7 @@
 #include <utility>
 #include <vector>
 
+#include "source/opt/allocator.h"
 #include "source/opt/instruction.h"
 #include "source/opt/instruction_list.h"
 #include "source/opt/iterator.h"
@@ -46,7 +47,7 @@ class BasicBlock {
       std::reverse_iterator<InstructionList::const_iterator>;
 
   // Creates a basic block with the given starting |label|.
-  inline explicit BasicBlock(std::unique_ptr<Instruction> label);
+  inline explicit BasicBlock(CAUniquePtr<Instruction> label);
 
   explicit BasicBlock(const BasicBlock& bb) = delete;
 
@@ -54,7 +55,7 @@ class BasicBlock {
   //
   // The parent function will default to null and needs to be explicitly set by
   // the user.
-  BasicBlock* Clone(IRContext*) const;
+  CAUniquePtr<BasicBlock> Clone(IRContext*) const;
 
   // Sets the enclosing function for this basic block.
   void SetParent(Function* function) { function_ = function; }
@@ -63,7 +64,7 @@ class BasicBlock {
   inline Function* GetParent() const { return function_; }
 
   // Appends an instruction to this basic block.
-  inline void AddInstruction(std::unique_ptr<Instruction> i);
+  inline void AddInstruction(CAUniquePtr<Instruction> i);
 
   // Appends all of block's instructions (except label) to this block
   inline void AddInstructions(BasicBlock* bp);
@@ -218,7 +219,7 @@ class BasicBlock {
   // The enclosing function.
   Function* function_;
   // The label starting this basic block.
-  std::unique_ptr<Instruction> label_;
+  CAUniquePtr<Instruction> label_;
   // Instructions inside this basic block, but not the OpLabel.
   InstructionList insts_;
 };
@@ -226,10 +227,10 @@ class BasicBlock {
 // Pretty-prints |block| to |str|. Returns |str|.
 std::ostream& operator<<(std::ostream& str, const BasicBlock& block);
 
-inline BasicBlock::BasicBlock(std::unique_ptr<Instruction> label)
+inline BasicBlock::BasicBlock(CAUniquePtr<Instruction> label)
     : function_(nullptr), label_(std::move(label)) {}
 
-inline void BasicBlock::AddInstruction(std::unique_ptr<Instruction> i) {
+inline void BasicBlock::AddInstruction(CAUniquePtr<Instruction> i) {
   insts_.push_back(std::move(i));
 }
 

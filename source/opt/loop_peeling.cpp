@@ -343,9 +343,9 @@ BasicBlock* LoopPeeling::CreateBlockBefore(BasicBlock* bb) {
   CFG& cfg = *context_->cfg();
   assert(cfg.preds(bb->id()).size() == 1 && "More than one predecessor");
 
-  std::unique_ptr<BasicBlock> new_bb =
-      MakeUnique<BasicBlock>(std::unique_ptr<Instruction>(new Instruction(
-          context_, SpvOpLabel, 0, context_->TakeNextId(), {})));
+  auto new_bb = CAMakeUnique<BasicBlock>(
+      CAMakeUnique<Instruction>(context_, SpvOpLabel, 0, context_->TakeNextId(),
+                                std::initializer_list<Operand>{}));
   new_bb->SetParent(loop_utils_.GetFunction());
   // Update the loop descriptor.
   Loop* in_loop = (*loop_utils_.GetLoopDescriptor())[bb];

@@ -32,12 +32,11 @@ const uint32_t kSelectionMergeMergeBlockIdInIdx = 0;
 
 }  // namespace
 
-BasicBlock* BasicBlock::Clone(IRContext* context) const {
-  BasicBlock* clone = new BasicBlock(
-      std::unique_ptr<Instruction>(GetLabelInst()->Clone(context)));
+CAUniquePtr<BasicBlock> BasicBlock::Clone(IRContext* context) const {
+  auto clone = CAMakeUnique<BasicBlock>(GetLabelInst()->Clone(context));
   for (const auto& inst : insts_)
     // Use the incoming context
-    clone->AddInstruction(std::unique_ptr<Instruction>(inst.Clone(context)));
+    clone->AddInstruction(inst.Clone(context));
   return clone;
 }
 
@@ -212,9 +211,8 @@ BasicBlock* BasicBlock::SplitBasicBlock(IRContext* context, uint32_t label_id,
                                         iterator iter) {
   assert(!insts_.empty());
 
-  std::unique_ptr<BasicBlock> new_block_temp =
-      MakeUnique<BasicBlock>(MakeUnique<Instruction>(
-          context, SpvOpLabel, 0, label_id, std::initializer_list<Operand>{}));
+  auto new_block_temp = CAMakeUnique<BasicBlock>(CAMakeUnique<Instruction>(
+      context, SpvOpLabel, 0, label_id, std::initializer_list<Operand>{}));
   BasicBlock* new_block = new_block_temp.get();
   function_->InsertBasicBlockAfter(std::move(new_block_temp), this);
 

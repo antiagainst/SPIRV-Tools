@@ -99,8 +99,7 @@ void DecorationManager::RemoveDecorationsFrom(
     if (!group_decorations_to_keep.empty()) {
       for (Instruction* decoration : group_decorations_to_keep) {
         // simply clone decoration and change |group_id| to |id|
-        std::unique_ptr<Instruction> new_inst(
-            decoration->Clone(module_->context()));
+        auto new_inst = decoration->Clone(module_->context());
         new_inst->SetInOperand(0, {id});
         module_->AddAnnotationInst(std::move(new_inst));
         auto decoration_iter = --module_->annotation_end();
@@ -357,7 +356,7 @@ void DecorationManager::CloneDecorations(uint32_t from, uint32_t to) {
   auto context = module_->context();
   for (Instruction* inst : decoration_list->second.direct_decorations) {
     // simply clone decoration and change |target-id| to |to|
-    std::unique_ptr<Instruction> new_inst(inst->Clone(module_->context()));
+    auto new_inst = inst->Clone(module_->context());
     new_inst->SetInOperand(0, {to});
     module_->AddAnnotationInst(std::move(new_inst));
     auto decoration_iter = --module_->annotation_end();
@@ -412,7 +411,7 @@ void DecorationManager::CloneDecorations(
     }
 
     // Clone decoration and change |target-id| to |to|.
-    std::unique_ptr<Instruction> new_inst(inst->Clone(module_->context()));
+    auto new_inst = inst->Clone(module_->context());
     new_inst->SetInOperand(0, {to});
     module_->AddAnnotationInst(std::move(new_inst));
     auto decoration_iter = --module_->annotation_end();

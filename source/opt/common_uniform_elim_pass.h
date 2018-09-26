@@ -100,7 +100,7 @@ class CommonUniformElimPass : public Pass {
   // For the (constant index) access chain ptrInst, create an
   // equivalent load and extract
   void GenACLoadRepl(const Instruction* ptrInst,
-                     std::vector<std::unique_ptr<Instruction>>* newInsts,
+                     std::vector<CAUniquePtr<Instruction>>* newInsts,
                      uint32_t* resultId);
 
   // Return true if all indices are constant

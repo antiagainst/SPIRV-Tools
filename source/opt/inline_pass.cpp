@@ -35,14 +35,15 @@ namespace opt {
 uint32_t InlinePass::AddPointerToType(uint32_t type_id,
                                       SpvStorageClass storage_class) {
   uint32_t resultId = TakeNextId();
-  std::unique_ptr<Instruction> type_inst(
-      new Instruction(context(), SpvOpTypePointer, 0, resultId,
-                      {{spv_operand_type_t::SPV_OPERAND_TYPE_STORAGE_CLASS,
-                        {uint32_t(storage_class)}},
-                       {spv_operand_type_t::SPV_OPERAND_TYPE_ID, {type_id}}}));
+  auto type_inst = CAMakeUnique<Instruction>(
+      context(), SpvOpTypePointer, 0, resultId,
+      std::initializer_list<Operand>{
+          {spv_operand_type_t::SPV_OPERAND_TYPE_STORAGE_CLASS,
+           {uint32_t(storage_class)}},
+          {spv_operand_type_t::SPV_OPERAND_TYPE_ID, {type_id}}});
   context()->AddType(std::move(type_inst));
   analysis::Type* pointeeTy;
-  std::unique_ptr<analysis::Pointer> pointerTy;
+  CAUniquePtr<analysis::Pointer> pointerTy;
   std::tie(pointeeTy, pointerTy) =
       context()->get_type_mgr()->GetTypeAndPointerType(type_id,
                                                        SpvStorageClassFunction);
@@ -51,55 +52,59 @@ uint32_t InlinePass::AddPointerToType(uint32_t type_id,
 }
 
 void InlinePass::AddBranch(uint32_t label_id,
-                           std::unique_ptr<BasicBlock>* block_ptr) {
-  std::unique_ptr<Instruction> newBranch(
-      new Instruction(context(), SpvOpBranch, 0, 0,
-                      {{spv_operand_type_t::SPV_OPERAND_TYPE_ID, {label_id}}}));
+                           CAUniquePtr<BasicBlock>* block_ptr) {
+  auto newBranch = CAMakeUnique<Instruction>(
+      context(), SpvOpBranch, 0, 0,
+      std::initializer_list<Operand>{
+          {spv_operand_type_t::SPV_OPERAND_TYPE_ID, {label_id}}});
   (*block_ptr)->AddInstruction(std::move(newBranch));
 }
 
 void InlinePass::AddBranchCond(uint32_t cond_id, uint32_t true_id,
                                uint32_t false_id,
-                               std::unique_ptr<BasicBlock>* block_ptr) {
-  std::unique_ptr<Instruction> newBranch(
-      new Instruction(context(), SpvOpBranchConditional, 0, 0,
-                      {{spv_operand_type_t::SPV_OPERAND_TYPE_ID, {cond_id}},
-                       {spv_operand_type_t::SPV_OPERAND_TYPE_ID, {true_id}},
-                       {spv_operand_type_t::SPV_OPERAND_TYPE_ID, {false_id}}}));
+                               CAUniquePtr<BasicBlock>* block_ptr) {
+  auto newBranch = CAMakeUnique<Instruction>(
+      context(), SpvOpBranchConditional, 0, 0,
+      std::initializer_list<Operand>{
+          {spv_operand_type_t::SPV_OPERAND_TYPE_ID, {cond_id}},
+          {spv_operand_type_t::SPV_OPERAND_TYPE_ID, {true_id}},
+          {spv_operand_type_t::SPV_OPERAND_TYPE_ID, {false_id}}});
   (*block_ptr)->AddInstruction(std::move(newBranch));
 }
 
 void InlinePass::AddLoopMerge(uint32_t merge_id, uint32_t continue_id,
-                              std::unique_ptr<BasicBlock>* block_ptr) {
-  std::unique_ptr<Instruction> newLoopMerge(new Instruction(
+                              CAUniquePtr<BasicBlock>* block_ptr) {
+  auto newLoopMerge = CAMakeUnique<Instruction>(
       context(), SpvOpLoopMerge, 0, 0,
-      {{spv_operand_type_t::SPV_OPERAND_TYPE_ID, {merge_id}},
-       {spv_operand_type_t::SPV_OPERAND_TYPE_ID, {continue_id}},
-       {spv_operand_type_t::SPV_OPERAND_TYPE_LOOP_CONTROL, {0}}}));
+      std::initializer_list<Operand>{
+          {spv_operand_type_t::SPV_OPERAND_TYPE_ID, {merge_id}},
+          {spv_operand_type_t::SPV_OPERAND_TYPE_ID, {continue_id}},
+          {spv_operand_type_t::SPV_OPERAND_TYPE_LOOP_CONTROL, {0}}});
   (*block_ptr)->AddInstruction(std::move(newLoopMerge));
 }
 
 void InlinePass::AddStore(uint32_t ptr_id, uint32_t val_id,
-                          std::unique_ptr<BasicBlock>* block_ptr) {
-  std::unique_ptr<Instruction> newStore(
-      new Instruction(context(), SpvOpStore, 0, 0,
-                      {{spv_operand_type_t::SPV_OPERAND_TYPE_ID, {ptr_id}},
-                       {spv_operand_type_t::SPV_OPERAND_TYPE_ID, {val_id}}}));
+                          CAUniquePtr<BasicBlock>* block_ptr) {
+  auto newStore = CAMakeUnique<Instruction>(
+      context(), SpvOpStore, 0, 0,
+      std::initializer_list<Operand>{
+          {spv_operand_type_t::SPV_OPERAND_TYPE_ID, {ptr_id}},
+          {spv_operand_type_t::SPV_OPERAND_TYPE_ID, {val_id}}});
   (*block_ptr)->AddInstruction(std::move(newStore));
 }
 
 void InlinePass::AddLoad(uint32_t type_id, uint32_t resultId, uint32_t ptr_id,
-                         std::unique_ptr<BasicBlock>* block_ptr) {
-  std::unique_ptr<Instruction> newLoad(
-      new Instruction(context(), SpvOpLoad, type_id, resultId,
-                      {{spv_operand_type_t::SPV_OPERAND_TYPE_ID, {ptr_id}}}));
+                         CAUniquePtr<BasicBlock>* block_ptr) {
+  auto newLoad = CAMakeUnique<Instruction>(
+      context(), SpvOpLoad, type_id, resultId,
+      std::initializer_list<Operand>{
+          {spv_operand_type_t::SPV_OPERAND_TYPE_ID, {ptr_id}}});
   (*block_ptr)->AddInstruction(std::move(newLoad));
 }
 
-std::unique_ptr<Instruction> InlinePass::NewLabel(uint32_t label_id) {
-  std::unique_ptr<Instruction> newLabel(
-      new Instruction(context(), SpvOpLabel, 0, label_id, {}));
-  return newLabel;
+CAUniquePtr<Instruction> InlinePass::NewLabel(uint32_t label_id) {
+  return CAMakeUnique<Instruction>(context(), SpvOpLabel, 0, label_id,
+                                   std::initializer_list<Operand>{});
 }
 
 uint32_t InlinePass::GetFalseId() {
@@ -130,12 +135,12 @@ void InlinePass::MapParams(Function* calleeFn,
 }
 
 void InlinePass::CloneAndMapLocals(
-    Function* calleeFn, std::vector<std::unique_ptr<Instruction>>* new_vars,
+    Function* calleeFn, std::vector<CAUniquePtr<Instruction>>* new_vars,
     CAUnorderedMap<uint32_t, uint32_t>* callee2caller) {
   auto callee_block_itr = calleeFn->begin();
   auto callee_var_itr = callee_block_itr->begin();
   while (callee_var_itr->opcode() == SpvOp::SpvOpVariable) {
-    std::unique_ptr<Instruction> var_inst(callee_var_itr->Clone(context()));
+    auto var_inst = callee_var_itr->Clone(context());
     uint32_t newId = TakeNextId();
     get_decoration_mgr()->CloneDecorations(callee_var_itr->result_id(), newId);
     var_inst->SetResultId(newId);
@@ -146,7 +151,7 @@ void InlinePass::CloneAndMapLocals(
 }
 
 uint32_t InlinePass::CreateReturnVar(
-    Function* calleeFn, std::vector<std::unique_ptr<Instruction>>* new_vars) {
+    Function* calleeFn, std::vector<CAUniquePtr<Instruction>>* new_vars) {
   uint32_t returnVarId = 0;
   const uint32_t calleeTypeId = calleeFn->type_id();
   analysis::Type* calleeType = context()->get_type_mgr()->GetType(calleeTypeId);
@@ -158,10 +163,11 @@ uint32_t InlinePass::CreateReturnVar(
       returnVarTypeId = AddPointerToType(calleeTypeId, SpvStorageClassFunction);
     // Add return var to new function scope variables.
     returnVarId = TakeNextId();
-    std::unique_ptr<Instruction> var_inst(
-        new Instruction(context(), SpvOpVariable, returnVarTypeId, returnVarId,
-                        {{spv_operand_type_t::SPV_OPERAND_TYPE_STORAGE_CLASS,
-                          {SpvStorageClassFunction}}}));
+    auto var_inst = CAMakeUnique<Instruction>(
+        context(), SpvOpVariable, returnVarTypeId, returnVarId,
+        std::initializer_list<Operand>{
+            {spv_operand_type_t::SPV_OPERAND_TYPE_STORAGE_CLASS,
+             {SpvStorageClassFunction}}});
     new_vars->push_back(std::move(var_inst));
   }
   get_decoration_mgr()->CloneDecorations(calleeFn->result_id(), returnVarId);
@@ -173,10 +179,10 @@ bool InlinePass::IsSameBlockOp(const Instruction* inst) const {
 }
 
 void InlinePass::CloneSameBlockOps(
-    std::unique_ptr<Instruction>* inst,
+    CAUniquePtr<Instruction>* inst,
     CAUnorderedMap<uint32_t, uint32_t>* postCallSB,
     CAUnorderedMap<uint32_t, Instruction*>* preCallSB,
-    std::unique_ptr<BasicBlock>* block_ptr) {
+    CAUniquePtr<BasicBlock>* block_ptr) {
   (*inst)->ForEachInId(
       [&postCallSB, &preCallSB, &block_ptr, this](uint32_t* iid) {
         const auto mapItr = (*postCallSB).find(*iid);
@@ -185,7 +191,7 @@ void InlinePass::CloneSameBlockOps(
           if (mapItr2 != (*preCallSB).end()) {
             // Clone pre-call same-block ops, map result id.
             const Instruction* inInst = mapItr2->second;
-            std::unique_ptr<Instruction> sb_inst(inInst->Clone(context()));
+            auto sb_inst = inInst->Clone(context());
             CloneSameBlockOps(&sb_inst, postCallSB, preCallSB, block_ptr);
             const uint32_t rid = sb_inst->result_id();
             const uint32_t nid = this->TakeNextId();
@@ -202,11 +208,10 @@ void InlinePass::CloneSameBlockOps(
       });
 }
 
-void InlinePass::GenInlineCode(
-    std::vector<std::unique_ptr<BasicBlock>>* new_blocks,
-    std::vector<std::unique_ptr<Instruction>>* new_vars,
-    BasicBlock::iterator call_inst_itr,
-    UptrVectorIterator<BasicBlock> call_block_itr) {
+void InlinePass::GenInlineCode(std::vector<CAUniquePtr<BasicBlock>>* new_blocks,
+                               std::vector<CAUniquePtr<Instruction>>* new_vars,
+                               BasicBlock::iterator call_inst_itr,
+                               UptrVectorIterator<BasicBlock> call_block_itr) {
   // Map from all ids in the callee to their equivalent id in the caller
   // as callee instructions are copied into caller.
   CAUnorderedMap<uint32_t, uint32_t> callee2caller;
@@ -274,7 +279,7 @@ void InlinePass::GenInlineCode(
   // written to it.  It is created when we encounter the OpLabel
   // of the first callee block.  It is appended to new_blocks only when
   // it is complete.
-  std::unique_ptr<BasicBlock> new_blk_ptr;
+  CAUniquePtr<BasicBlock> new_blk_ptr;
   calleeFn->ForEachInst([&new_blocks, &callee2caller, &call_block_itr,
                          &call_inst_itr, &new_blk_ptr, &prevInstWasReturn,
                          &returnLabelId, &returnVarId, caller_is_loop_header,
@@ -304,8 +309,8 @@ void InlinePass::GenInlineCode(
         // Generate a return label so that we split the block with the function
         // call. Copy the terminator into the new block.
         if (returnLabelId == 0) returnLabelId = this->TakeNextId();
-        std::unique_ptr<Instruction> terminator(
-            new Instruction(context(), cpi->opcode(), 0, 0, {}));
+        auto terminator = CAMakeUnique<Instruction>(
+            context(), cpi->opcode(), 0, 0, std::initializer_list<Operand>{});
         new_blk_ptr->AddInstruction(std::move(terminator));
         break;
       }
@@ -336,14 +341,14 @@ void InlinePass::GenInlineCode(
           firstBlock = true;
         }
         // Create first/next block.
-        new_blk_ptr = MakeUnique<BasicBlock>(NewLabel(labelId));
+        new_blk_ptr = CAMakeUnique<BasicBlock>(NewLabel(labelId));
         if (firstBlock) {
           // Copy contents of original caller block up to call instruction.
           for (auto cii = call_block_itr->begin(); cii != call_inst_itr;
                cii = call_block_itr->begin()) {
             Instruction* inst = &*cii;
             inst->RemoveFromList();
-            std::unique_ptr<Instruction> cp_inst(inst);
+            CAUniquePtr<Instruction> cp_inst(inst);
             // Remember same-block ops for possible regeneration.
             if (IsSameBlockOp(&*cp_inst)) {
               auto* sb_inst_ptr = cp_inst.get();
@@ -362,7 +367,7 @@ void InlinePass::GenInlineCode(
             AddBranch(guard_block_id, &new_blk_ptr);
             new_blocks->push_back(std::move(new_blk_ptr));
             // Start the next block.
-            new_blk_ptr = MakeUnique<BasicBlock>(NewLabel(guard_block_id));
+            new_blk_ptr = CAMakeUnique<BasicBlock>(NewLabel(guard_block_id));
             // Reset the mapping of the callee's entry block to point to
             // the guard block.  Do this so we can fix up phis later on to
             // satisfy dominance.
@@ -384,14 +389,14 @@ void InlinePass::GenInlineCode(
             AddBranch(singleTripLoopHeaderId, &new_blk_ptr);
             new_blocks->push_back(std::move(new_blk_ptr));
             new_blk_ptr =
-                MakeUnique<BasicBlock>(NewLabel(singleTripLoopHeaderId));
+                CAMakeUnique<BasicBlock>(NewLabel(singleTripLoopHeaderId));
             returnLabelId = this->TakeNextId();
             singleTripLoopContinueId = this->TakeNextId();
             AddLoopMerge(returnLabelId, singleTripLoopContinueId, &new_blk_ptr);
             uint32_t postHeaderId = this->TakeNextId();
             AddBranch(postHeaderId, &new_blk_ptr);
             new_blocks->push_back(std::move(new_blk_ptr));
-            new_blk_ptr = MakeUnique<BasicBlock>(NewLabel(postHeaderId));
+            new_blk_ptr = CAMakeUnique<BasicBlock>(NewLabel(postHeaderId));
             multiBlocks = true;
             // Reset the mapping of the callee's entry block to point to
             // the post-header block.  Do this so we can fix up phis later
@@ -434,13 +439,13 @@ void InlinePass::GenInlineCode(
             // target block now, with a false branch back to the loop header.
             new_blocks->push_back(std::move(new_blk_ptr));
             new_blk_ptr =
-                MakeUnique<BasicBlock>(NewLabel(singleTripLoopContinueId));
+                CAMakeUnique<BasicBlock>(NewLabel(singleTripLoopContinueId));
             AddBranchCond(GetFalseId(), singleTripLoopHeaderId, returnLabelId,
                           &new_blk_ptr);
           }
           // Generate the return block.
           new_blocks->push_back(std::move(new_blk_ptr));
-          new_blk_ptr = MakeUnique<BasicBlock>(NewLabel(returnLabelId));
+          new_blk_ptr = CAMakeUnique<BasicBlock>(NewLabel(returnLabelId));
           multiBlocks = true;
         }
         // Load return value into result id of call, if it exists.
@@ -453,7 +458,7 @@ void InlinePass::GenInlineCode(
         for (Instruction* inst = call_inst_itr->NextNode(); inst;
              inst = call_inst_itr->NextNode()) {
           inst->RemoveFromList();
-          std::unique_ptr<Instruction> cp_inst(inst);
+          CAUniquePtr<Instruction> cp_inst(inst);
           // If multiple blocks generated, regenerate any same-block
           // instruction that has not been seen in this last block.
           if (multiBlocks) {
@@ -471,7 +476,7 @@ void InlinePass::GenInlineCode(
       } break;
       default: {
         // Copy callee instruction and remap all input Ids.
-        std::unique_ptr<Instruction> cp_inst(cpi->Clone(context()));
+        auto cp_inst = cpi->Clone(context());
         cp_inst->ForEachInId([&callee2caller, &callee_result_ids,
                               this](uint32_t* iid) {
           const auto mapItr = callee2caller.find(*iid);
@@ -516,7 +521,7 @@ void InlinePass::GenInlineCode(
     auto loop_merge_itr = last->tail();
     --loop_merge_itr;
     assert(loop_merge_itr->opcode() == SpvOpLoopMerge);
-    std::unique_ptr<Instruction> cp_inst(loop_merge_itr->Clone(context()));
+    auto cp_inst = loop_merge_itr->Clone(context());
     if (caller_is_single_block_loop) {
       // Also, update its continue target to point to the last block.
       cp_inst->SetInOperand(kSpvLoopMergeContinueTargetIdInIdx, {last->id()});
@@ -543,7 +548,7 @@ bool InlinePass::IsInlinableFunctionCall(const Instruction* inst) {
 }
 
 void InlinePass::UpdateSucceedingPhis(
-    std::vector<std::unique_ptr<BasicBlock>>& new_blocks) {
+    std::vector<CAUniquePtr<BasicBlock>>& new_blocks) {
   const auto firstBlk = new_blocks.begin();
   const auto lastBlk = new_blocks.end() - 1;
   const uint32_t firstId = (*firstBlk)->id();
