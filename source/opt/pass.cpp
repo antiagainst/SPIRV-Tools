@@ -30,7 +30,7 @@ const uint32_t kTypePointerTypeIdInIdx = 1;
 
 Pass::Pass() : consumer_(nullptr), context_(nullptr), already_run_(false) {}
 
-void Pass::AddCalls(Function* func, std::queue<uint32_t>* todo) {
+void Pass::AddCalls(Function* func, CAQueue<uint32_t>* todo) {
   for (auto bi = func->begin(); bi != func->end(); ++bi)
     for (auto ii = bi->begin(); ii != bi->end(); ++ii)
       if (ii->opcode() == SpvOpFunctionCall)
@@ -43,7 +43,7 @@ bool Pass::ProcessEntryPointCallTree(ProcessFunction& pfn, Module* module) {
   for (auto& fn : *module) id2function[fn.result_id()] = &fn;
 
   // Collect all of the entry points as the roots.
-  std::queue<uint32_t> roots;
+  CAQueue<uint32_t> roots;
   for (auto& e : module->entry_points())
     roots.push(e.GetSingleWordInOperand(kEntryPointFunctionIdInIdx));
   return ProcessCallTreeFromRoots(pfn, id2function, &roots);
@@ -55,7 +55,7 @@ bool Pass::ProcessReachableCallTree(ProcessFunction& pfn,
   CAUnorderedMap<uint32_t, Function*> id2function;
   for (auto& fn : *irContext->module()) id2function[fn.result_id()] = &fn;
 
-  std::queue<uint32_t> roots;
+  CAQueue<uint32_t> roots;
 
   // Add all entry points since they can be reached from outside the module.
   for (auto& e : irContext->module()->entry_points())
@@ -85,7 +85,7 @@ bool Pass::ProcessReachableCallTree(ProcessFunction& pfn,
 bool Pass::ProcessCallTreeFromRoots(
     ProcessFunction& pfn,
     const CAUnorderedMap<uint32_t, Function*>& id2function,
-    std::queue<uint32_t>* roots) {
+    CAQueue<uint32_t>* roots) {
   // Process call tree
   bool modified = false;
   CAUnorderedSet<uint32_t> done;

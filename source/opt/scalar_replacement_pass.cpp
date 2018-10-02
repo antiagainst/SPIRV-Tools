@@ -42,7 +42,7 @@ Pass::Status ScalarReplacementPass::Process() {
 }
 
 Pass::Status ScalarReplacementPass::ProcessFunction(Function* function) {
-  std::queue<Instruction*> worklist;
+  CAQueue<Instruction*> worklist;
   BasicBlock& entry = *function->begin();
   for (auto iter = entry.begin(); iter != entry.end(); ++iter) {
     // Function storage class OpVariables must appear as the first instructions
@@ -70,7 +70,7 @@ Pass::Status ScalarReplacementPass::ProcessFunction(Function* function) {
 }
 
 bool ScalarReplacementPass::ReplaceVariable(
-    Instruction* inst, std::queue<Instruction*>* worklist) {
+    Instruction* inst, CAQueue<Instruction*>* worklist) {
   std::vector<Instruction*> replacements;
   CreateReplacementVariables(inst, &replacements);
 

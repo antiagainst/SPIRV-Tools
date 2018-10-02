@@ -91,7 +91,7 @@ class Pass {
   CFG* cfg() const { return context()->cfg(); }
 
   // Add to |todo| all ids of functions called in |func|.
-  void AddCalls(Function* func, std::queue<uint32_t>* todo);
+  void AddCalls(Function* func, CAQueue<uint32_t>* todo);
 
   // Applies |pfn| to every function in the call trees that are rooted at the
   // entry points.  Returns true if any call |pfn| returns true.  By convention
@@ -110,7 +110,7 @@ class Pass {
   bool ProcessCallTreeFromRoots(
       ProcessFunction& pfn,
       const CAUnorderedMap<uint32_t, Function*>& id2function,
-      std::queue<uint32_t>* roots);
+      CAQueue<uint32_t>* roots);
 
   // Run the pass on the given |module|. Returns Status::Failure if errors occur
   // when processing. Returns the corresponding Status::Success if processing is

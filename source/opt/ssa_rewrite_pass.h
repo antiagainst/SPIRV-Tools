@@ -265,7 +265,7 @@ class SSARewriter {
   // Queue of incomplete Phi candidates. These are Phi candidates created at
   // unsealed blocks. They need to be completed before they are instantiated
   // in ApplyReplacements.
-  std::queue<PhiCandidate*> incomplete_phis_;
+  CAQueue<PhiCandidate*> incomplete_phis_;
 
   // List of completed Phi candidates.  These are the only candidates that
   // will become real Phi instructions.

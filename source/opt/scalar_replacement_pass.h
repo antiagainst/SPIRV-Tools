@@ -116,7 +116,7 @@ class ScalarReplacementPass : public Pass {
   // get added to |worklist| for further processing. If any replacement
   // variable ends up with no uses it is erased. Returns false if any
   // subsequent access chain is out of bounds.
-  bool ReplaceVariable(Instruction* inst, std::queue<Instruction*>* worklist);
+  bool ReplaceVariable(Instruction* inst, CAQueue<Instruction*>* worklist);
 
   // Returns the underlying storage type for |inst|.
   //

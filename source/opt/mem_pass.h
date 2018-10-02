@@ -104,7 +104,7 @@ class MemPass : public Pass {
   bool IsLiveVar(uint32_t varId) const;
 
   // Add stores using |ptr_id| to |insts|
-  void AddStores(uint32_t ptr_id, std::queue<Instruction*>* insts);
+  void AddStores(uint32_t ptr_id, CAQueue<Instruction*>* insts);
 
   // Delete |inst| and iterate DCE on all its operands if they are now
   // useless. If a load is deleted and its variable has no other loads,

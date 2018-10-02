@@ -277,10 +277,10 @@ class SSAPropagator {
 
   // SSA def-use edges to traverse. Each entry is a destination statement for an
   // SSA def-use edge as returned by |def_use_manager_|.
-  std::queue<Instruction*> ssa_edge_uses_;
+  CAQueue<Instruction*> ssa_edge_uses_;
 
   // Blocks to simulate.
-  std::queue<BasicBlock*> blocks_;
+  CAQueue<BasicBlock*> blocks_;
 
   // Blocks simulated during propagation.
   CAUnorderedSet<BasicBlock*> simulated_blocks_;

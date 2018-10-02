@@ -154,7 +154,7 @@ class AggressiveDCEPass : public MemPass {
   // If we don't know, then add it to this list.  Instructions are
   // removed from this list as the algorithm traces side effects,
   // building up the live instructions set |live_insts_|.
-  std::queue<Instruction*> worklist_;
+  CAQueue<Instruction*> worklist_;
 
   // Map from block to the branch instruction in the header of the most
   // immediate controlling structured if or loop.  A loop header block points

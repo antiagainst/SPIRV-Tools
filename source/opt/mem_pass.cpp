@@ -170,7 +170,7 @@ bool MemPass::IsLiveVar(uint32_t varId) const {
   return HasLoads(varId);
 }
 
-void MemPass::AddStores(uint32_t ptr_id, std::queue<Instruction*>* insts) {
+void MemPass::AddStores(uint32_t ptr_id, CAQueue<Instruction*>* insts) {
   get_def_use_mgr()->ForEachUser(ptr_id, [this, insts](Instruction* user) {
     SpvOp op = user->opcode();
     if (IsNonPtrAccessChain(op)) {
@@ -183,7 +183,7 @@ void MemPass::AddStores(uint32_t ptr_id, std::queue<Instruction*>* insts) {
 
 void MemPass::DCEInst(Instruction* inst,
                       const std::function<void(Instruction*)>& call_back) {
-  std::queue<Instruction*> deadInsts;
+  CAQueue<Instruction*> deadInsts;
   deadInsts.push(inst);
   while (!deadInsts.empty()) {
     Instruction* di = deadInsts.front();
@@ -401,7 +401,7 @@ bool MemPass::RemoveUnreachableBlocks(Function* func) {
   // Mark reachable all blocks reachable from the function's entry block.
   CAUnorderedSet<BasicBlock*> reachable_blocks;
   CAUnorderedSet<BasicBlock*> visited_blocks;
-  std::queue<BasicBlock*> worklist;
+  CAQueue<BasicBlock*> worklist;
   reachable_blocks.insert(func->entry().get());
 
   // Initially mark the function entry point as reachable.

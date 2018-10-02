@@ -21,6 +21,7 @@
 #include <list>
 #include <map>
 #include <memory>
+#include <queue>
 #include <set>
 #include <unordered_map>
 #include <unordered_set>
@@ -195,6 +196,12 @@ using CASet = std::set<Key, Compare, StlAllocator<Key>>;
 
 template <class T>
 using CAList = std::list<T, StlAllocator<T>>;
+
+template <class T>
+using CADeque = std::deque<T, StlAllocator<T>>;
+
+template <class T>
+using CAQueue = std::queue<T, CADeque<T>>;
 
 }  // namespace spvtools
 
