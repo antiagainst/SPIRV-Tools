@@ -62,7 +62,7 @@ class CFG {
   // dominate and merge blocks come after all blocks that are in the control
   // constructs of their header.
   void ComputeStructuredOrder(Function* func, BasicBlock* root,
-                              std::list<BasicBlock*>* order);
+                              CAList<BasicBlock*>* order);
 
   // Applies |f| to the basic block in post order starting with |bb|.
   // Note that basic blocks that cannot be reached from |bb| node will not be

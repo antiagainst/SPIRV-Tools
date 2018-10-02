@@ -31,7 +31,7 @@ Pass::Status Workaround1209::Process() {
 bool Workaround1209::RemoveOpUnreachableInLoops() {
   bool modified = false;
   for (auto& func : *get_module()) {
-    std::list<BasicBlock*> structured_order;
+    CAList<BasicBlock*> structured_order;
     cfg()->ComputeStructuredOrder(&func, &*func.begin(), &structured_order);
 
     // Keep track of the loop merges.  The top of the stack will always be the

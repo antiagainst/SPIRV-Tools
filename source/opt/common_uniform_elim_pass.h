@@ -128,7 +128,7 @@ class CommonUniformElimPass : public Pass {
   //
   // TODO(dnovillo): This pass computes structured order slightly different
   // than the implementation in class Pass. Can this be re-factored?
-  void ComputeStructuredOrder(Function* func, std::list<BasicBlock*>* order);
+  void ComputeStructuredOrder(Function* func, CAList<BasicBlock*>* order);
 
   // Eliminate loads of uniform variables which have previously been loaded.
   // If first load is in control flow, move it to first block of function.
@@ -193,7 +193,7 @@ class CommonUniformElimPass : public Pass {
 
   // Map of extract composite ids to map of indices to insts
   // TODO(greg-lunarg): Consider std::vector.
-  CAUnorderedMap<uint32_t, CAUnorderedMap<uint32_t, std::list<Instruction*>>>
+  CAUnorderedMap<uint32_t, CAUnorderedMap<uint32_t, CAList<Instruction*>>>
       comp2idx2inst_;
 
   // Extensions supported by this pass.

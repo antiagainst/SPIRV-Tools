@@ -34,7 +34,7 @@ StructuredCFGAnalysis::StructuredCFGAnalysis(IRContext* ctx) : context_(ctx) {
 }
 
 void StructuredCFGAnalysis::AddBlocksInFunction(Function* func) {
-  std::list<BasicBlock*> order;
+  CAList<BasicBlock*> order;
   context_->cfg()->ComputeStructuredOrder(func, &*func->begin(), &order);
 
   struct TraversalInfo {

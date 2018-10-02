@@ -108,7 +108,7 @@ class AggressiveDCEPass : public MemPass {
 
   // Initialize block2headerBranch_ and branch2merge_ using |structuredOrder|
   // to order blocks.
-  void ComputeBlock2HeaderMaps(std::list<BasicBlock*>& structuredOrder);
+  void ComputeBlock2HeaderMaps(CAList<BasicBlock*>& structuredOrder);
 
   // Add branch to |labelId| to end of block |bp|.
   void AddBranch(uint32_t labelId, BasicBlock* bp);

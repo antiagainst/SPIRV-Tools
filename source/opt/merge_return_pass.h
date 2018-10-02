@@ -17,6 +17,7 @@
 
 #include <vector>
 
+#include "source/opt/allocator.h"
 #include "source/opt/basic_block.h"
 #include "source/opt/function.h"
 #include "source/opt/mem_pass.h"
@@ -212,7 +213,7 @@ class MergeReturnPass : public MemPass {
   // can traverse these new block in structured order.
   void PredicateBlocks(BasicBlock* return_block,
                        CAUnorderedSet<BasicBlock*>* pSet,
-                       std::list<BasicBlock*>* order);
+                       CAList<BasicBlock*>* order);
 
   // Add a conditional branch at the start of |block| that either jumps to
   // |merge_block| or the original code in |block| depending on the value in
@@ -222,7 +223,7 @@ class MergeReturnPass : public MemPass {
   // can traverse these new block in structured order.
   void BreakFromConstruct(BasicBlock* block, BasicBlock* merge_block,
                           CAUnorderedSet<BasicBlock*>* predicated,
-                          std::list<BasicBlock*>* order);
+                          CAList<BasicBlock*>* order);
 
   // Add an |OpReturn| or |OpReturnValue| to the end of |block|.  If an
   // |OpReturnValue| is needed, the return value is loaded from |return_value_|.
@@ -276,7 +277,7 @@ class MergeReturnPass : public MemPass {
   // Inserts |new_element| into |list| after the first occurrence of |element|.
   // |element| must be in |list| at least once.
   void InsertAfterElement(BasicBlock* element, BasicBlock* new_element,
-                          std::list<BasicBlock*>* list);
+                          CAList<BasicBlock*>* list);
 
   // Creates a single iteration loop around all of the exectuable code of the
   // current function and returns after the loop is done. Sets

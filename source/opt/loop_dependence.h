@@ -459,7 +459,7 @@ class LoopDependenceAnalysis {
   std::ostream* debug_stream_;
 
   // Stores all the constraints created by the analysis.
-  std::list<std::unique_ptr<Constraint>> constraints_;
+  CAList<std::unique_ptr<Constraint>> constraints_;
 
   // Returns true if independence can be proven and false if it can't be proven.
   bool ZIVTest(const std::pair<SENode*, SENode*>& subscript_pair);

@@ -73,7 +73,7 @@ void CFG::RemoveNonExistingEdges(uint32_t blk_id) {
 }
 
 void CFG::ComputeStructuredOrder(Function* func, BasicBlock* root,
-                                 std::list<BasicBlock*>* order) {
+                                 CAList<BasicBlock*>* order) {
   assert(module_->context()->get_feature_mgr()->HasCapability(
              SpvCapabilityShader) &&
          "This only works on structured control flow");

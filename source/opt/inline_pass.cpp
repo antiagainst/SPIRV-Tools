@@ -611,7 +611,7 @@ bool InlinePass::HasNoReturnInLoop(Function* func) {
   ComputeStructuredSuccessors(func);
   auto ignore_block = [](cbb_ptr) {};
   auto ignore_edge = [](cbb_ptr, cbb_ptr) {};
-  std::list<const BasicBlock*> structuredOrder;
+  CAList<const BasicBlock*> structuredOrder;
   CFA<BasicBlock>::DepthFirstTraversal(
       &*func->begin(), StructuredSuccessorsFunction(), ignore_block,
       [&](cbb_ptr b) { structuredOrder.push_front(b); }, ignore_edge);

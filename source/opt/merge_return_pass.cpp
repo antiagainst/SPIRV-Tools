@@ -55,7 +55,7 @@ void MergeReturnPass::ProcessStructured(
     Function* function, const std::vector<BasicBlock*>& return_blocks) {
   AddDummyLoopAroundFunction();
 
-  std::list<BasicBlock*> order;
+  CAList<BasicBlock*> order;
   cfg()->ComputeStructuredOrder(function, &*function->begin(), &order);
 
   state_.clear();
@@ -267,7 +267,7 @@ void MergeReturnPass::CreatePhiNodesForInst(BasicBlock* merge_block,
 
 void MergeReturnPass::PredicateBlocks(BasicBlock* return_block,
                                       CAUnorderedSet<BasicBlock*>* predicated,
-                                      std::list<BasicBlock*>* order) {
+                                      CAList<BasicBlock*>* order) {
   // The CFG is being modified as the function proceeds so avoid caching
   // successors.
 
@@ -312,7 +312,7 @@ void MergeReturnPass::PredicateBlocks(BasicBlock* return_block,
 
 void MergeReturnPass::BreakFromConstruct(
     BasicBlock* block, BasicBlock* merge_block,
-    CAUnorderedSet<BasicBlock*>* predicated, std::list<BasicBlock*>* order) {
+    CAUnorderedSet<BasicBlock*>* predicated, CAList<BasicBlock*>* order) {
   // Make sure the cfg is build here.  If we don't then it becomes very hard
   // to know which new blocks need to be updated.
   context()->BuildInvalidAnalyses(IRContext::kAnalysisCFG);
@@ -570,7 +570,7 @@ void MergeReturnPass::MergeReturnBlocks(
 
 void MergeReturnPass::AddNewPhiNodes() {
   DominatorAnalysis* dom_tree = context()->GetDominatorAnalysis(function_);
-  std::list<BasicBlock*> order;
+  CAList<BasicBlock*> order;
   cfg()->ComputeStructuredOrder(function_, &*function_->begin(), &order);
 
   for (BasicBlock* bb : order) {
@@ -603,7 +603,7 @@ void MergeReturnPass::MarkForNewPhiNodes(BasicBlock* block,
 
 void MergeReturnPass::InsertAfterElement(BasicBlock* element,
                                          BasicBlock* new_element,
-                                         std::list<BasicBlock*>* list) {
+                                         CAList<BasicBlock*>* list) {
   auto pos = std::find(list->begin(), list->end(), element);
   assert(pos != list->end());
   ++pos;

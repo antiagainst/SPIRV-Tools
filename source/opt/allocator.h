@@ -18,6 +18,7 @@
 #include <cassert>
 #include <cstdlib>
 #include <limits>
+#include <list>
 #include <map>
 #include <memory>
 #include <set>
@@ -191,6 +192,9 @@ using CAUnorderedSet =
 
 template <class Key, class Compare = std::less<Key>>
 using CASet = std::set<Key, Compare, StlAllocator<Key>>;
+
+template <class T>
+using CAList = std::list<T, StlAllocator<T>>;
 
 }  // namespace spvtools
 

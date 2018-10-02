@@ -309,8 +309,8 @@ void CommonUniformElimPass::ComputeStructuredSuccessors(Function* func) {
   }
 }
 
-void CommonUniformElimPass::ComputeStructuredOrder(
-    Function* func, std::list<BasicBlock*>* order) {
+void CommonUniformElimPass::ComputeStructuredOrder(Function* func,
+                                                   CAList<BasicBlock*>* order) {
   // Compute structured successors and do DFS
   ComputeStructuredSuccessors(func);
   auto ignore_block = [](cbb_ptr) {};
@@ -335,7 +335,7 @@ bool CommonUniformElimPass::CommonUniformLoadElimination(Function* func) {
   // simplest?) to keep track of the most recent block outside of control
   // flow, used to copy common instructions, guaranteed to dominate all
   // following load sites.
-  std::list<BasicBlock*> structuredOrder;
+  CAList<BasicBlock*> structuredOrder;
   ComputeStructuredOrder(func, &structuredOrder);
   uniform2load_id_.clear();
   bool modified = false;

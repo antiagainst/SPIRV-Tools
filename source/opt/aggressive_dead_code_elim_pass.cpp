@@ -193,7 +193,7 @@ bool AggressiveDCEPass::IsStructuredHeader(BasicBlock* bp,
 }
 
 void AggressiveDCEPass::ComputeBlock2HeaderMaps(
-    std::list<BasicBlock*>& structuredOrder) {
+    CAList<BasicBlock*>& structuredOrder) {
   block2headerBranch_.clear();
   branch2merge_.clear();
   structured_order_index_.clear();
@@ -316,7 +316,7 @@ bool AggressiveDCEPass::AggressiveDCE(Function* func) {
       false);
 
   // Compute map from block to controlling conditional branch
-  std::list<BasicBlock*> structuredOrder;
+  CAList<BasicBlock*> structuredOrder;
   cfg()->ComputeStructuredOrder(func, &*func->begin(), &structuredOrder);
   ComputeBlock2HeaderMaps(structuredOrder);
   bool modified = false;
