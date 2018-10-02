@@ -112,7 +112,7 @@ class TreeDFIterator {
   // already visited) and the iterator of the next children to visit.
   // When all the children has been visited, we pop the entry, get the next
   // child and push back the pair if the children iterator is not end().
-  std::stack<std::pair<NodePtr, NodeIterator>> parent_iterators_;
+  CAStack<std::pair<NodePtr, NodeIterator>> parent_iterators_;
 };
 
 // Helper class to iterate over a tree in a depth first post-order.
@@ -237,7 +237,7 @@ class PostOrderTreeDFIterator {
   // of the next children to visit.
   // When all the children has been visited, we pop the first entry and the
   // parent node become the current node.
-  std::stack<std::pair<NodePtr, NodeIterator>> parent_iterators_;
+  CAStack<std::pair<NodePtr, NodeIterator>> parent_iterators_;
 };
 
 }  // namespace opt

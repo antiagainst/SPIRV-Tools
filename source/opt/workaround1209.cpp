@@ -37,7 +37,7 @@ bool Workaround1209::RemoveOpUnreachableInLoops() {
     // Keep track of the loop merges.  The top of the stack will always be the
     // loop merge for the loop that immediately contains the basic block being
     // processed.
-    std::stack<uint32_t> loop_merges;
+    CAStack<uint32_t> loop_merges;
     for (BasicBlock* bb : structured_order) {
       if (!loop_merges.empty() && bb->id() == loop_merges.top()) {
         loop_merges.pop();

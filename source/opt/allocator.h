@@ -23,6 +23,7 @@
 #include <memory>
 #include <queue>
 #include <set>
+#include <stack>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
@@ -202,6 +203,9 @@ using CADeque = std::deque<T, StlAllocator<T>>;
 
 template <class T>
 using CAQueue = std::queue<T, CADeque<T>>;
+
+template <class T>
+using CAStack = std::stack<T, CADeque<T>>;
 
 }  // namespace spvtools
 

@@ -371,7 +371,7 @@ void Loop::GetMergingBlocks(CAUnorderedSet<uint32_t>* merging_blocks) const {
   CFG* cfg = context_->cfg();
   merging_blocks->clear();
 
-  std::stack<const BasicBlock*> to_visit;
+  CAStack<const BasicBlock*> to_visit;
   to_visit.push(GetMergeBlock());
   while (!to_visit.empty()) {
     const BasicBlock* bb = to_visit.top();

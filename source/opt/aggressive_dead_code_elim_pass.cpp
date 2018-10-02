@@ -197,7 +197,7 @@ void AggressiveDCEPass::ComputeBlock2HeaderMaps(
   block2headerBranch_.clear();
   branch2merge_.clear();
   structured_order_index_.clear();
-  std::stack<Instruction*> currentHeaderBranch;
+  CAStack<Instruction*> currentHeaderBranch;
   currentHeaderBranch.push(nullptr);
   uint32_t currentMergeBlockId = 0;
   uint32_t index = 0;
@@ -330,8 +330,8 @@ bool AggressiveDCEPass::AggressiveDCE(Function* func) {
   // Stacks to keep track of when we are inside an if- or loop-construct.
   // When immediately inside an if- or loop-construct, we do not initially
   // mark branches live. All other branches must be marked live.
-  std::stack<bool> assume_branches_live;
-  std::stack<uint32_t> currentMergeBlockId;
+  CAStack<bool> assume_branches_live;
+  CAStack<uint32_t> currentMergeBlockId;
   // Push sentinel values on stack for when outside of any control flow.
   assume_branches_live.push(true);
   currentMergeBlockId.push(0);
