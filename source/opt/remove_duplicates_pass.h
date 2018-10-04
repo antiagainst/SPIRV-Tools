@@ -28,7 +28,7 @@ namespace spvtools {
 namespace opt {
 
 using IdDecorationsList =
-    std::unordered_map<uint32_t, std::vector<Instruction*>>;
+    absl::flat_hash_map<uint32_t, std::vector<Instruction*>>;
 
 // See optimizer.hpp for documentation.
 class RemoveDuplicatesPass : public Pass {

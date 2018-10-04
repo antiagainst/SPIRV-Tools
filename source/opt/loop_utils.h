@@ -34,7 +34,7 @@ struct CodeMetrics {
   void Analyze(const Loop& loop);
 
   // The number of instructions per basic block in the ROI.
-  std::unordered_map<uint32_t, size_t> block_sizes_;
+  absl::flat_hash_map<uint32_t, size_t> block_sizes_;
 
   // Number of instruction in the ROI.
   size_t roi_size_;
@@ -47,9 +47,9 @@ class LoopUtils {
  public:
   // Holds a auxiliary results of the loop cloning procedure.
   struct LoopCloningResult {
-    using ValueMapTy = std::unordered_map<uint32_t, uint32_t>;
-    using BlockMapTy = std::unordered_map<uint32_t, BasicBlock*>;
-    using PtrMap = std::unordered_map<Instruction*, Instruction*>;
+    using ValueMapTy = absl::flat_hash_map<uint32_t, uint32_t>;
+    using BlockMapTy = absl::flat_hash_map<uint32_t, BasicBlock*>;
+    using PtrMap = absl::flat_hash_map<Instruction*, Instruction*>;
 
     PtrMap ptr_map_;
 

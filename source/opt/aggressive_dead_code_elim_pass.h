@@ -161,7 +161,7 @@ class AggressiveDCEPass : public MemPass {
   // immediate controlling structured if or loop.  A loop header block points
   // to its own branch instruction.  An if-selection block points to the branch
   // of an enclosing construct's header, if one exists.
-  std::unordered_map<BasicBlock*, Instruction*> block2headerBranch_;
+  absl::flat_hash_map<BasicBlock*, Instruction*> block2headerBranch_;
 
   // Map from header block to the branch instruction in the header of the
   // structured construct enclosing it.
@@ -170,10 +170,10 @@ class AggressiveDCEPass : public MemPass {
   std::unordered_map<BasicBlock*, Instruction*> header2nextHeaderBranch_;
 
   // Maps basic block to their index in the structured order traversal.
-  std::unordered_map<BasicBlock*, uint32_t> structured_order_index_;
+  absl::flat_hash_map<BasicBlock*, uint32_t> structured_order_index_;
 
   // Map from branch to its associated merge instruction, if any
-  std::unordered_map<Instruction*, Instruction*> branch2merge_;
+  absl::flat_hash_map<Instruction*, Instruction*> branch2merge_;
 
   // Store instructions to variables of private storage
   std::vector<Instruction*> private_stores_;
@@ -182,14 +182,14 @@ class AggressiveDCEPass : public MemPass {
   utils::BitVector live_insts_;
 
   // Live Local Variables
-  std::unordered_set<uint32_t> live_local_vars_;
+  absl::flat_hash_set<uint32_t> live_local_vars_;
 
   // List of instructions to delete. Deletion is delayed until debug and
   // annotation instructions are processed.
   std::vector<Instruction*> to_kill_;
 
   // Extensions supported by this pass.
-  std::unordered_set<std::string> extensions_whitelist_;
+  absl::flat_hash_set<std::string> extensions_whitelist_;
 };
 
 }  // namespace opt

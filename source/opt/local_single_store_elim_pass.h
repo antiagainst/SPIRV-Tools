@@ -92,7 +92,7 @@ class LocalSingleStoreElimPass : public Pass {
                     const std::vector<Instruction*>& uses);
 
   // Extensions supported by this pass.
-  std::unordered_set<std::string> extensions_whitelist_;
+  absl::flat_hash_set<std::string> extensions_whitelist_;
 };
 
 }  // namespace opt

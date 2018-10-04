@@ -25,7 +25,7 @@ BasicBlock* DominatorAnalysisBase::CommonDominator(BasicBlock* b1,
                                                    BasicBlock* b2) const {
   if (!b1 || !b2) return nullptr;
 
-  std::unordered_set<BasicBlock*> seen;
+  absl::flat_hash_set<BasicBlock*> seen;
   BasicBlock* block = b1;
   while (block && seen.insert(block).second) {
     block = ImmediateDominator(block);

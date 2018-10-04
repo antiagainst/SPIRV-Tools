@@ -69,7 +69,7 @@ class FoldingRules {
   }
 
  private:
-  std::unordered_map<uint32_t, std::vector<FoldingRule>> rules_;
+  absl::flat_hash_map<uint32_t, std::vector<FoldingRule>> rules_;
   std::vector<FoldingRule> empty_vector_;
 };
 

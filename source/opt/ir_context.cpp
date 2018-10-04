@@ -577,7 +577,7 @@ LoopDescriptor* IRContext::GetLoopDescriptor(const Function* f) {
     ResetLoopAnalysis();
   }
 
-  std::unordered_map<const Function*, LoopDescriptor>::iterator it =
+  absl::flat_hash_map<const Function*, LoopDescriptor>::iterator it =
       loop_descriptors_.find(f);
   if (it == loop_descriptors_.end()) {
     return &loop_descriptors_
@@ -700,7 +700,7 @@ PostDominatorAnalysis* IRContext::GetPostDominatorAnalysis(const Function* f) {
 }
 
 bool IRContext::CheckCFG() {
-  std::unordered_map<uint32_t, std::vector<uint32_t>> real_preds;
+  absl::flat_hash_map<uint32_t, std::vector<uint32_t>> real_preds;
   if (!AreAnalysesValid(kAnalysisCFG)) {
     return true;
   }

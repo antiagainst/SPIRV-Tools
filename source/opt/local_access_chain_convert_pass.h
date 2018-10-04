@@ -118,10 +118,10 @@ class LocalAccessChainConvertPass : public MemPass {
 
   // Variables with only supported references, ie. loads and stores using
   // variable directly or through non-ptr access chains.
-  std::unordered_set<uint32_t> supported_ref_ptrs_;
+  absl::flat_hash_set<uint32_t> supported_ref_ptrs_;
 
   // Extensions supported by this pass.
-  std::unordered_set<std::string> extensions_whitelist_;
+  absl::flat_hash_set<std::string> extensions_whitelist_;
 };
 
 }  // namespace opt

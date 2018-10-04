@@ -18,6 +18,9 @@
 #include <sstream>
 #include <unordered_set>
 
+#include "absl/container/flat_hash_map.h"
+#include "absl/container/flat_hash_set.h"
+
 #include "source/opt/types.h"
 #include "source/util/make_unique.h"
 
@@ -174,7 +177,7 @@ bool Type::operator==(const Type& other) const {
 }
 
 void Type::GetHashWords(std::vector<uint32_t>* words,
-                        std::unordered_set<const Type*>* seen) const {
+                        absl::flat_hash_set<const Type*>* seen) const {
   if (!seen->insert(this).second) {
     return;
   }
@@ -247,7 +250,7 @@ std::string Integer::str() const {
 }
 
 void Integer::GetExtraHashWords(std::vector<uint32_t>* words,
-                                std::unordered_set<const Type*>*) const {
+                                absl::flat_hash_set<const Type*>*) const {
   words->push_back(width_);
   words->push_back(signed_);
 }
@@ -264,7 +267,7 @@ std::string Float::str() const {
 }
 
 void Float::GetExtraHashWords(std::vector<uint32_t>* words,
-                              std::unordered_set<const Type*>*) const {
+                              absl::flat_hash_set<const Type*>*) const {
   words->push_back(width_);
 }
 
@@ -288,7 +291,7 @@ std::string Vector::str() const {
 }
 
 void Vector::GetExtraHashWords(std::vector<uint32_t>* words,
-                               std::unordered_set<const Type*>* seen) const {
+                               absl::flat_hash_set<const Type*>* seen) const {
   element_type_->GetHashWords(words, seen);
   words->push_back(count_);
 }
@@ -313,7 +316,7 @@ std::string Matrix::str() const {
 }
 
 void Matrix::GetExtraHashWords(std::vector<uint32_t>* words,
-                               std::unordered_set<const Type*>* seen) const {
+                               absl::flat_hash_set<const Type*>* seen) const {
   element_type_->GetHashWords(words, seen);
   words->push_back(count_);
 }
@@ -351,7 +354,7 @@ std::string Image::str() const {
 }
 
 void Image::GetExtraHashWords(std::vector<uint32_t>* words,
-                              std::unordered_set<const Type*>* seen) const {
+                              absl::flat_hash_set<const Type*>* seen) const {
   sampled_type_->GetHashWords(words, seen);
   words->push_back(dim_);
   words->push_back(depth_);
@@ -376,7 +379,7 @@ std::string SampledImage::str() const {
 }
 
 void SampledImage::GetExtraHashWords(
-    std::vector<uint32_t>* words, std::unordered_set<const Type*>* seen) const {
+    std::vector<uint32_t>* words, absl::flat_hash_set<const Type*>* seen) const {
   image_type_->GetHashWords(words, seen);
 }
 
@@ -400,7 +403,7 @@ std::string Array::str() const {
 }
 
 void Array::GetExtraHashWords(std::vector<uint32_t>* words,
-                              std::unordered_set<const Type*>* seen) const {
+                              absl::flat_hash_set<const Type*>* seen) const {
   element_type_->GetHashWords(words, seen);
   words->push_back(length_id_);
 }
@@ -426,7 +429,7 @@ std::string RuntimeArray::str() const {
 }
 
 void RuntimeArray::GetExtraHashWords(
-    std::vector<uint32_t>* words, std::unordered_set<const Type*>* seen) const {
+    std::vector<uint32_t>* words, absl::flat_hash_set<const Type*>* seen) const {
   element_type_->GetHashWords(words, seen);
 }
 
@@ -485,7 +488,7 @@ std::string Struct::str() const {
 }
 
 void Struct::GetExtraHashWords(std::vector<uint32_t>* words,
-                               std::unordered_set<const Type*>* seen) const {
+                               absl::flat_hash_set<const Type*>* seen) const {
   for (auto* t : element_types_) {
     t->GetHashWords(words, seen);
   }
@@ -512,7 +515,7 @@ std::string Opaque::str() const {
 }
 
 void Opaque::GetExtraHashWords(std::vector<uint32_t>* words,
-                               std::unordered_set<const Type*>*) const {
+                               absl::flat_hash_set<const Type*>*) const {
   for (auto c : name_) {
     words->push_back(static_cast<char32_t>(c));
   }
@@ -540,7 +543,7 @@ bool Pointer::IsSameImpl(const Type* that, IsSameCache* seen) const {
 std::string Pointer::str() const { return pointee_type_->str() + "*"; }
 
 void Pointer::GetExtraHashWords(std::vector<uint32_t>* words,
-                                std::unordered_set<const Type*>* seen) const {
+                                absl::flat_hash_set<const Type*>* seen) const {
   pointee_type_->GetHashWords(words, seen);
   words->push_back(storage_class_);
 }
@@ -587,7 +590,7 @@ std::string Function::str() const {
 }
 
 void Function::GetExtraHashWords(std::vector<uint32_t>* words,
-                                 std::unordered_set<const Type*>* seen) const {
+                                 absl::flat_hash_set<const Type*>* seen) const {
   return_type_->GetHashWords(words, seen);
   for (const auto* t : param_types_) {
     t->GetHashWords(words, seen);
@@ -609,7 +612,7 @@ std::string Pipe::str() const {
 }
 
 void Pipe::GetExtraHashWords(std::vector<uint32_t>* words,
-                             std::unordered_set<const Type*>*) const {
+                             absl::flat_hash_set<const Type*>*) const {
   words->push_back(access_qualifier_);
 }
 
@@ -633,7 +636,7 @@ std::string ForwardPointer::str() const {
 }
 
 void ForwardPointer::GetExtraHashWords(
-    std::vector<uint32_t>* words, std::unordered_set<const Type*>* seen) const {
+    std::vector<uint32_t>* words, absl::flat_hash_set<const Type*>* seen) const {
   words->push_back(target_id_);
   words->push_back(storage_class_);
   if (pointer_) pointer_->GetHashWords(words, seen);

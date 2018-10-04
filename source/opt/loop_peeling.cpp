@@ -179,7 +179,7 @@ void LoopPeeling::InsertCanonicalInductionVariable(
 
 void LoopPeeling::GetIteratorUpdateOperations(
     const Loop* loop, Instruction* iterator,
-    std::unordered_set<Instruction*>* operations) {
+    absl::flat_hash_set<Instruction*>* operations) {
   analysis::DefUseManager* def_use_mgr = context_->get_def_use_mgr();
   operations->insert(iterator);
   iterator->ForEachInId([def_use_mgr, loop, operations, this](uint32_t* id) {
@@ -199,7 +199,7 @@ void LoopPeeling::GetIteratorUpdateOperations(
 
 // Gather the set of blocks for all the path from |entry| to |root|.
 static void GetBlocksInPath(uint32_t block, uint32_t entry,
-                            std::unordered_set<uint32_t>* blocks_in_path,
+                            absl::flat_hash_set<uint32_t>* blocks_in_path,
                             const CFG& cfg) {
   for (uint32_t pid : cfg.preds(block)) {
     if (blocks_in_path->insert(pid).second) {
@@ -218,7 +218,7 @@ bool LoopPeeling::IsConditionCheckSideEffectFree() const {
   if (!do_while_form_) {
     uint32_t condition_block_id = cfg.preds(loop_->GetMergeBlock()->id())[0];
 
-    std::unordered_set<uint32_t> blocks_in_path;
+    absl::flat_hash_set<uint32_t> blocks_in_path;
 
     blocks_in_path.insert(condition_block_id);
     GetBlocksInPath(condition_block_id, loop_->GetHeaderBlock()->id(),
@@ -268,7 +268,7 @@ void LoopPeeling::GetIteratingExitValues() {
   if (do_while_form_) {
     loop_->GetHeaderBlock()->ForEachPhiInst(
         [condition_block_id, def_use_mgr, this](Instruction* phi) {
-          std::unordered_set<Instruction*> operations;
+          absl::flat_hash_set<Instruction*> operations;
 
           for (uint32_t i = 0; i < phi->NumInOperands(); i += 2) {
             if (condition_block_id == phi->GetSingleWordInOperand(i + 1)) {
@@ -285,7 +285,7 @@ void LoopPeeling::GetIteratingExitValues() {
 
     loop_->GetHeaderBlock()->ForEachPhiInst(
         [dom_tree, condition_block, this](Instruction* phi) {
-          std::unordered_set<Instruction*> operations;
+          absl::flat_hash_set<Instruction*> operations;
 
           // Not the back-edge value, check if the phi instruction is the only
           // possible candidate.

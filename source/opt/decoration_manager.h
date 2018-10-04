@@ -20,6 +20,9 @@
 #include <unordered_set>
 #include <vector>
 
+#include "absl/container/flat_hash_map.h"
+#include "absl/container/flat_hash_set.h"
+
 #include "source/opt/instruction.h"
 #include "source/opt/module.h"
 
@@ -155,7 +158,7 @@ class DecorationManager {
   // referencing that id, be it directly (SpvOpDecorate, SpvOpMemberDecorate
   // and SpvOpDecorateId), or indirectly (SpvOpGroupDecorate,
   // SpvOpMemberGroupDecorate).
-  std::unordered_map<uint32_t, TargetData> id_to_decoration_insts_;
+  absl::flat_hash_map<uint32_t, TargetData> id_to_decoration_insts_;
   // The enclosing module.
   Module* module_;
 };

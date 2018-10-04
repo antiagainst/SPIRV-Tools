@@ -18,6 +18,9 @@
 #include <cstdint>
 #include <unordered_map>
 
+#include "absl/container/flat_hash_map.h"
+#include "absl/container/flat_hash_set.h"
+
 #include "source/opt/instruction.h"
 
 namespace spvtools {
@@ -78,9 +81,9 @@ class ValueNumberTable {
   // id.
   uint32_t AssignValueNumber(Instruction* inst);
 
-  std::unordered_map<Instruction, uint32_t, ValueTableHash, ComputeSameValue>
+  absl::flat_hash_map<Instruction, uint32_t, ValueTableHash, ComputeSameValue>
       instruction_to_value_;
-  std::unordered_map<uint32_t, uint32_t> id_to_value_;
+  absl::flat_hash_map<uint32_t, uint32_t> id_to_value_;
   IRContext* context_;
   uint32_t next_value_number_;
 };

@@ -23,6 +23,9 @@
 #include <utility>
 #include <vector>
 
+#include "absl/container/flat_hash_map.h"
+#include "absl/container/flat_hash_set.h"
+
 #include "source/opt/basic_block.h"
 #include "source/opt/instruction.h"
 #include "source/opt/scalar_analysis_nodes.h"
@@ -163,7 +166,7 @@ class ScalarEvolutionAnalysis {
 
   // Cache of nodes. All pointers to the nodes are references to the memory
   // managed by they set.
-  std::unordered_set<std::unique_ptr<SENode>, SENodeHash, NodePointersEquality>
+  absl::flat_hash_set<std::unique_ptr<SENode>, SENodeHash, NodePointersEquality>
       node_cache_;
 
   // Loops that should be considered the same for performing analysis for loop

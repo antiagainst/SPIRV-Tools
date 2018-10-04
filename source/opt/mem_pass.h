@@ -127,10 +127,10 @@ class MemPass : public Pass {
   uint32_t Type2Undef(uint32_t type_id);
 
   // Cache of verified target vars
-  std::unordered_set<uint32_t> seen_target_vars_;
+  absl::flat_hash_set<uint32_t> seen_target_vars_;
 
   // Cache of verified non-target vars
-  std::unordered_set<uint32_t> seen_non_target_vars_;
+  absl::flat_hash_set<uint32_t> seen_non_target_vars_;
 
  private:
   // Return true if all uses of |varId| are only through supported reference
@@ -151,10 +151,10 @@ class MemPass : public Pass {
   // |reachable_blocks|.
   void RemovePhiOperands(
       Instruction* phi,
-      const std::unordered_set<BasicBlock*>& reachable_blocks);
+      const absl::flat_hash_set<BasicBlock*>& reachable_blocks);
 
   // Map from type to undef
-  std::unordered_map<uint32_t, uint32_t> type2undefs_;
+  absl::flat_hash_map<uint32_t, uint32_t> type2undefs_;
 };
 
 }  // namespace opt

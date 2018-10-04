@@ -20,6 +20,9 @@
 #include <utility>
 #include <vector>
 
+#include "absl/container/flat_hash_map.h"
+#include "absl/container/flat_hash_set.h"
+
 #include "source/opt/function.h"
 #include "source/opt/types.h"
 
@@ -47,7 +50,7 @@ class RegisterLiveness {
   };
 
   struct RegionRegisterLiveness {
-    using LiveSet = std::unordered_set<Instruction*>;
+    using LiveSet = absl::flat_hash_set<Instruction*>;
     using RegClassSetTy = std::vector<std::pair<RegisterClass, size_t>>;
 
     // SSA register live when entering the basic block.
@@ -148,14 +151,14 @@ class RegisterLiveness {
   // of the loop with the removed instructions.
   void SimulateFission(
       const Loop& loop,
-      const std::unordered_set<Instruction*>& moved_instructions,
-      const std::unordered_set<Instruction*>& copied_instructions,
+      const absl::flat_hash_set<Instruction*>& moved_instructions,
+      const absl::flat_hash_set<Instruction*>& copied_instructions,
       RegionRegisterLiveness* loop1_sim_result,
       RegionRegisterLiveness* loop2_sim_result) const;
 
  private:
   using RegionRegisterLivenessMap =
-      std::unordered_map<uint32_t, RegionRegisterLiveness>;
+      absl::flat_hash_map<uint32_t, RegionRegisterLiveness>;
 
   IRContext* context_;
   RegionRegisterLivenessMap block_pressure_;
@@ -168,7 +171,7 @@ class RegisterLiveness {
 // pressure following code transformations.
 class LivenessAnalysis {
   using LivenessAnalysisMap =
-      std::unordered_map<const Function*, RegisterLiveness>;
+      absl::flat_hash_map<const Function*, RegisterLiveness>;
 
  public:
   LivenessAnalysis(IRContext* context) : context_(context) {}

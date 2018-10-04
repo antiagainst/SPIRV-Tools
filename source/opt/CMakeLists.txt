@@ -203,10 +203,12 @@ target_include_directories(SPIRV-Tools-opt
   PUBLIC ${spirv-tools_SOURCE_DIR}/include
   PUBLIC ${SPIRV_HEADER_INCLUDE_DIR}
   PRIVATE ${spirv-tools_BINARY_DIR}
+  PUBLIC ${absl_SOURCE_DIR}
 )
 # We need the assembling and disassembling functionalities in the main library.
 target_link_libraries(SPIRV-Tools-opt
-  PUBLIC ${SPIRV_TOOLS})
+  PUBLIC ${SPIRV_TOOLS}
+  PUBLIC absl_container absl_hash absl_base)
 
 set_property(TARGET SPIRV-Tools-opt PROPERTY FOLDER "SPIRV-Tools libraries")
 spvtools_check_symbol_exports(SPIRV-Tools-opt)

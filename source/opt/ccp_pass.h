@@ -100,7 +100,7 @@ class CCPPass : public MemPass {
   // SSA ID is found to have a varying value, it will have an entry in this
   // table that maps to the special SSA id kVaryingSSAId.  These values are
   // never replaced in the IR, they are used by CCP during propagation.
-  std::unordered_map<uint32_t, uint32_t> values_;
+  absl::flat_hash_map<uint32_t, uint32_t> values_;
 
   // Propagator engine used.
   std::unique_ptr<SSAPropagator> propagator_;

@@ -352,7 +352,7 @@ BasicBlock* Loop::FindLatchBlock() {
   return nullptr;
 }
 
-void Loop::GetExitBlocks(std::unordered_set<uint32_t>* exit_blocks) const {
+void Loop::GetExitBlocks(absl::flat_hash_set<uint32_t>* exit_blocks) const {
   CFG* cfg = context_->cfg();
   exit_blocks->clear();
 
@@ -367,7 +367,7 @@ void Loop::GetExitBlocks(std::unordered_set<uint32_t>* exit_blocks) const {
 }
 
 void Loop::GetMergingBlocks(
-    std::unordered_set<uint32_t>* merging_blocks) const {
+    absl::flat_hash_set<uint32_t>* merging_blocks) const {
   assert(GetMergeBlock() && "This loop is not structured");
   CFG* cfg = context_->cfg();
   merging_blocks->clear();
@@ -410,7 +410,7 @@ bool Loop::IsSafeToClone() const {
 
   // Look at the merge construct.
   if (GetHeaderBlock()->GetLoopMergeInst()) {
-    std::unordered_set<uint32_t> blocks;
+    absl::flat_hash_set<uint32_t> blocks;
     GetMergingBlocks(&blocks);
     blocks.erase(GetMergeBlock()->id());
     for (uint32_t bb_id : blocks) {
@@ -427,7 +427,7 @@ bool Loop::IsLCSSA() const {
   CFG* cfg = context_->cfg();
   analysis::DefUseManager* def_use_mgr = context_->get_def_use_mgr();
 
-  std::unordered_set<uint32_t> exit_blocks;
+  absl::flat_hash_set<uint32_t> exit_blocks;
   GetExitBlocks(&exit_blocks);
 
   // Declare ir_context so we can capture context_ in the below lambda

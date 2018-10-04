@@ -55,7 +55,7 @@ class ReduceLoadSize : public Pass {
 
   // Maps the result id of an OpLoad instruction to the result of whether or
   // not the OpCompositeExtract that use the id should be replaced.
-  std::unordered_map<uint32_t, bool> should_replace_cache_;
+  absl::flat_hash_map<uint32_t, bool> should_replace_cache_;
 };
 
 }  // namespace opt

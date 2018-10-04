@@ -22,6 +22,9 @@
 #include <unordered_set>
 #include <utility>
 
+#include "absl/container/flat_hash_map.h"
+#include "absl/container/flat_hash_set.h"
+
 #include "source/opt/basic_block.h"
 #include "source/opt/def_use_manager.h"
 #include "source/opt/ir_context.h"
@@ -110,7 +113,7 @@ class Pass {
   // |roots| will be empty.
   bool ProcessCallTreeFromRoots(
       ProcessFunction& pfn,
-      const std::unordered_map<uint32_t, Function*>& id2function,
+      const absl::flat_hash_map<uint32_t, Function*>& id2function,
       std::queue<uint32_t>* roots);
 
   // Run the pass on the given |module|. Returns Status::Failure if errors occur

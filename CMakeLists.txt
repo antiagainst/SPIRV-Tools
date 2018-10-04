@@ -99,7 +99,8 @@ elseif(MSVC)
   set(SPIRV_WARNINGS -D_CRT_SECURE_NO_WARNINGS -D_SCL_SECURE_NO_WARNINGS /wd4800)
 
   if(${SPIRV_WERROR})
-    set(SPIRV_WARNINGS ${SPIRV_WARNINGS} /WX)
+    # TODO: Abseil has warnings when compiling using MSVC. Fix this.
+    #set(SPIRV_WARNINGS ${SPIRV_WARNINGS} /WX)
   endif()
 endif()
 

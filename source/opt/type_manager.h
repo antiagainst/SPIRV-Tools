@@ -21,6 +21,9 @@
 #include <utility>
 #include <vector>
 
+#include "absl/container/flat_hash_map.h"
+#include "absl/container/flat_hash_set.h"
+
 #include "source/opt/module.h"
 #include "source/opt/types.h"
 #include "spirv-tools/libspirv.hpp"
@@ -70,7 +73,7 @@ struct CompareTypeUniquePointers {
 // A class for managing the SPIR-V type hierarchy.
 class TypeManager {
  public:
-  using IdToTypeMap = std::unordered_map<uint32_t, Type*>;
+  using IdToTypeMap = absl::flat_hash_map<uint32_t, Type*>;
 
   // Constructs a type manager from the given |module|. All internal messages
   // will be communicated to the outside via the given message |consumer|.
@@ -137,10 +140,10 @@ class TypeManager {
                             const std::vector<uint32_t>& access_chain);
 
  private:
-  using TypeToIdMap = std::unordered_map<const Type*, uint32_t, HashTypePointer,
+  using TypeToIdMap = absl::flat_hash_map<const Type*, uint32_t, HashTypePointer,
                                          CompareTypePointers>;
   using TypePool =
-      std::unordered_set<std::unique_ptr<Type>, HashTypeUniquePointer,
+      absl::flat_hash_set<std::unique_ptr<Type>, HashTypeUniquePointer,
                          CompareTypeUniquePointers>;
 
   class UnresolvedType {

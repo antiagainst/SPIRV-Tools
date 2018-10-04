@@ -23,6 +23,9 @@
 #include <utility>
 #include <vector>
 
+#include "absl/container/flat_hash_map.h"
+#include "absl/container/flat_hash_set.h"
+
 #include "source/opt/module.h"
 #include "source/opt/type_manager.h"
 #include "source/opt/types.h"
@@ -673,7 +676,7 @@ class ConstantManager {
   // Constant instances. All Normal Constants in the module, either
   // existing ones before optimization or the newly generated ones, should have
   // their Constant instance stored and their result id registered in this map.
-  std::unordered_map<uint32_t, const Constant*> id_to_const_val_;
+  absl::flat_hash_map<uint32_t, const Constant*> id_to_const_val_;
 
   // A mapping from the Constant instance of Normal Constants to their
   // result id in the module. This is a mirror map of |id_to_const_val_|. All
@@ -682,7 +685,7 @@ class ConstantManager {
   std::multimap<const Constant*, uint32_t> const_val_to_id_;
 
   // The constant pool.  All created constants are registered here.
-  std::unordered_set<const Constant*, ConstantHash, ConstantEqual> const_pool_;
+  absl::flat_hash_set<const Constant*, ConstantHash, ConstantEqual> const_pool_;
 
   // The constant that are owned by the constant manager.  Every constant in
   // |const_pool_| should be in |owned_constants_| as well.

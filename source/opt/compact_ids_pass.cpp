@@ -24,7 +24,7 @@ namespace opt {
 
 Pass::Status CompactIdsPass::Process() {
   bool modified = false;
-  std::unordered_map<uint32_t, uint32_t> result_id_mapping;
+  absl::flat_hash_map<uint32_t, uint32_t> result_id_mapping;
 
   context()->module()->ForEachInst(
       [&result_id_mapping, &modified](Instruction* inst) {

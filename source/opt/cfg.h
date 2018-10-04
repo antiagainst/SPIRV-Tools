@@ -21,6 +21,9 @@
 #include <unordered_set>
 #include <vector>
 
+#include "absl/container/flat_hash_map.h"
+#include "absl/container/flat_hash_set.h"
+
 #include "source/opt/basic_block.h"
 
 namespace spvtools {
@@ -146,14 +149,14 @@ class CFG {
   // all nodes in the traversal are added to |seen|.
   void ComputePostOrderTraversal(BasicBlock* bb,
                                  std::vector<BasicBlock*>* order,
-                                 std::unordered_set<BasicBlock*>* seen);
+                                 absl::flat_hash_set<BasicBlock*>* seen);
 
   // Module for this CFG.
   Module* module_;
 
   // Map from block to its structured successor blocks. See
   // ComputeStructuredSuccessors() for definition.
-  std::unordered_map<const BasicBlock*, std::vector<BasicBlock*>>
+  absl::flat_hash_map<const BasicBlock*, std::vector<BasicBlock*>>
       block2structured_succs_;
 
   // Extra block whose successors are all blocks with no predecessors
@@ -164,10 +167,10 @@ class CFG {
   BasicBlock pseudo_exit_block_;
 
   // Map from block's label id to its predecessor blocks ids
-  std::unordered_map<uint32_t, std::vector<uint32_t>> label2preds_;
+  absl::flat_hash_map<uint32_t, std::vector<uint32_t>> label2preds_;
 
   // Map from block's label id to block.
-  std::unordered_map<uint32_t, BasicBlock*> id2block_;
+  absl::flat_hash_map<uint32_t, BasicBlock*> id2block_;
 };
 
 }  // namespace opt

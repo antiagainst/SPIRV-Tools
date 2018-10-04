@@ -60,7 +60,7 @@ class DeadInsertElimPass : public MemPass {
   // Mark all inserts in chain if |extIndices| is nullptr.
   void MarkInsertChain(Instruction* insertChain,
                        std::vector<uint32_t>* extIndices, uint32_t extOffset,
-                       std::unordered_set<uint32_t>* visited_phis);
+                       absl::flat_hash_set<uint32_t>* visited_phis);
 
   // Perform EliminateDeadInsertsOnePass(|func|) until no modification is
   // made. Return true if modified.
@@ -77,10 +77,10 @@ class DeadInsertElimPass : public MemPass {
   bool AllExtensionsSupported() const;
 
   // Live inserts
-  std::unordered_set<uint32_t> liveInserts_;
+  absl::flat_hash_set<uint32_t> liveInserts_;
 
   // Visited phis as insert chain is traversed; used to avoid infinite loop
-  std::unordered_map<uint32_t, bool> visitedPhis_;
+  absl::flat_hash_map<uint32_t, bool> visitedPhis_;
 };
 
 }  // namespace opt

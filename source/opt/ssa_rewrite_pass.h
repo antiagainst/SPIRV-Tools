@@ -122,8 +122,8 @@ class SSARewriter {
   };
 
   // Type used to keep track of store operations in each basic block.
-  typedef std::unordered_map<BasicBlock*,
-                             std::unordered_map<uint32_t, uint32_t>>
+  typedef absl::flat_hash_map<BasicBlock*,
+                             absl::flat_hash_map<uint32_t, uint32_t>>
       BlockDefsMap;
 
   // Generates all the SSA rewriting decisions for basic block |bb|.  This
@@ -262,7 +262,7 @@ class SSARewriter {
   // Map, indexed by Phi ID, holding all the Phi candidates created during SSA
   // rewriting.  |phi_candidates_[id]| returns the Phi candidate whose result
   // is |id|.
-  std::unordered_map<uint32_t, PhiCandidate> phi_candidates_;
+  absl::flat_hash_map<uint32_t, PhiCandidate> phi_candidates_;
 
   // Queue of incomplete Phi candidates. These are Phi candidates created at
   // unsealed blocks. They need to be completed before they are instantiated
@@ -277,10 +277,10 @@ class SSARewriter {
   // operation, to the value IDs that will replace them after SSA rewriting.
   // After all the rewriting decisions are made, a final scan through the IR
   // is done to replace all uses of the original load ID with the value ID.
-  std::unordered_map<uint32_t, uint32_t> load_replacement_;
+  absl::flat_hash_map<uint32_t, uint32_t> load_replacement_;
 
   // Set of blocks that have been sealed already.
-  std::unordered_set<BasicBlock*> sealed_blocks_;
+  absl::flat_hash_set<BasicBlock*> sealed_blocks_;
 
   // Memory pass requesting the SSA rewriter.
   MemPass* pass_;

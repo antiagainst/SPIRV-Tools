@@ -70,7 +70,7 @@ class ConstantFoldingRules {
   }
 
  private:
-  std::unordered_map<uint32_t, std::vector<ConstantFoldingRule>> rules_;
+  absl::flat_hash_map<uint32_t, std::vector<ConstantFoldingRule>> rules_;
   std::vector<ConstantFoldingRule> empty_vector_;
 };
 

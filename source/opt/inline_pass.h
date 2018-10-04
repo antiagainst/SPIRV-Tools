@@ -72,12 +72,12 @@ class InlinePass : public Pass {
 
   // Map callee params to caller args
   void MapParams(Function* calleeFn, BasicBlock::iterator call_inst_itr,
-                 std::unordered_map<uint32_t, uint32_t>* callee2caller);
+                 absl::flat_hash_map<uint32_t, uint32_t>* callee2caller);
 
   // Clone and map callee locals
   void CloneAndMapLocals(Function* calleeFn,
                          std::vector<std::unique_ptr<Instruction>>* new_vars,
-                         std::unordered_map<uint32_t, uint32_t>* callee2caller);
+                         absl::flat_hash_map<uint32_t, uint32_t>* callee2caller);
 
   // Create return variable for callee clone code if needed. Return id
   // if created, otherwise 0.
@@ -93,8 +93,8 @@ class InlinePass : public Pass {
   // postCallSB for instructions already cloned. Add cloned instruction
   // to postCallSB.
   void CloneSameBlockOps(std::unique_ptr<Instruction>* inst,
-                         std::unordered_map<uint32_t, uint32_t>* postCallSB,
-                         std::unordered_map<uint32_t, Instruction*>* preCallSB,
+                         absl::flat_hash_map<uint32_t, uint32_t>* postCallSB,
+                         absl::flat_hash_map<uint32_t, Instruction*>* preCallSB,
                          std::unique_ptr<BasicBlock>* block_ptr);
 
   // Return in new_blocks the result of inlining the call at call_inst_itr
@@ -142,11 +142,11 @@ class InlinePass : public Pass {
   void InitializeInline();
 
   // Map from function's result id to function.
-  std::unordered_map<uint32_t, Function*> id2function_;
+  absl::flat_hash_map<uint32_t, Function*> id2function_;
 
   // Map from block's label id to block. TODO(dnovillo): This is superfluous wrt
   // CFG. It has functionality not present in CFG. Consolidate.
-  std::unordered_map<uint32_t, BasicBlock*> id2block_;
+  absl::flat_hash_map<uint32_t, BasicBlock*> id2block_;
 
   // Set of ids of functions with early return.
   std::set<uint32_t> early_return_funcs_;

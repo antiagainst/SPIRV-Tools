@@ -41,9 +41,9 @@ bool SimplificationPass::SimplifyFunction(Function* function) {
   // track of the OpPhi instructions already seen, and add them to the work list
   // for phase 2 when needed.
   std::vector<Instruction*> work_list;
-  std::unordered_set<Instruction*> process_phis;
-  std::unordered_set<Instruction*> inst_to_kill;
-  std::unordered_set<Instruction*> in_work_list;
+  absl::flat_hash_set<Instruction*> process_phis;
+  absl::flat_hash_set<Instruction*> inst_to_kill;
+  absl::flat_hash_set<Instruction*> in_work_list;
   const InstructionFolder& folder = context()->get_instruction_folder();
 
   cfg()->ForEachBlockInReversePostOrder(

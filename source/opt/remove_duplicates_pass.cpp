@@ -46,7 +46,7 @@ bool RemoveDuplicatesPass::RemoveDuplicateCapabilities() const {
     return modified;
   }
 
-  std::unordered_set<uint32_t> capabilities;
+  absl::flat_hash_set<uint32_t> capabilities;
   for (auto* i = &*context()->capability_begin(); i;) {
     auto res = capabilities.insert(i->GetSingleWordOperand(0u));
 
@@ -70,7 +70,7 @@ bool RemoveDuplicatesPass::RemoveDuplicatesExtInstImports() const {
     return modified;
   }
 
-  std::unordered_map<std::string, SpvId> ext_inst_imports;
+  absl::flat_hash_map<std::string, SpvId> ext_inst_imports;
   for (auto* i = &*context()->ext_inst_import_begin(); i;) {
     auto res = ext_inst_imports.emplace(
         reinterpret_cast<const char*>(i->GetInOperand(0u).words.data()),

@@ -46,7 +46,7 @@ void DecorationManager::RemoveDecorationsFrom(
   // For all groups being directly applied to |id|, remove |id| (and the
   // literal if |inst| is an OpGroupMemberDecorate) from the instruction
   // applying the group.
-  std::unordered_set<const Instruction*> indirect_decorations_to_remove;
+  absl::flat_hash_set<const Instruction*> indirect_decorations_to_remove;
   for (Instruction* inst : decorations_info.indirect_decorations) {
     assert(inst->opcode() == SpvOpGroupDecorate ||
            inst->opcode() == SpvOpGroupMemberDecorate);

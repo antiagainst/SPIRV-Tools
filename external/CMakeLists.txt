@@ -102,3 +102,6 @@ if (NOT ${SPIRV_SKIP_TESTS})
     endif()
   endif()
 endif()
+
+set(BUILD_TESTING OFF)
+add_subdirectory(abseil-cpp EXCLUDE_FROM_ALL)

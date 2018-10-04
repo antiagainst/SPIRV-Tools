@@ -79,7 +79,7 @@ class DeadBranchElimPass : public MemPass {
   // header is live. Likewise, unreachable merge blocks named in live merge
   // instruction must be retained (though they may be clobbered).
   bool MarkLiveBlocks(Function* func,
-                      std::unordered_set<BasicBlock*>* live_blocks);
+                      absl::flat_hash_set<BasicBlock*>* live_blocks);
 
   // Checks for unreachable merge and continue blocks with live headers; those
   // blocks must be retained. Continues are tracked separately so that a live
@@ -89,9 +89,9 @@ class DeadBranchElimPass : public MemPass {
   // |unreachable_continues| maps the id of an unreachable continue target to
   // the header block that declares it.
   void MarkUnreachableStructuredTargets(
-      const std::unordered_set<BasicBlock*>& live_blocks,
-      std::unordered_set<BasicBlock*>* unreachable_merges,
-      std::unordered_map<BasicBlock*, BasicBlock*>* unreachable_continues);
+      const absl::flat_hash_set<BasicBlock*>& live_blocks,
+      absl::flat_hash_set<BasicBlock*>* unreachable_merges,
+      absl::flat_hash_map<BasicBlock*, BasicBlock*>* unreachable_continues);
 
   // Fix phis in reachable blocks so that only live (or unremovable) incoming
   // edges are present. If the block now only has a single live incoming edge,
@@ -106,8 +106,8 @@ class DeadBranchElimPass : public MemPass {
   // |unreachable_continues| maps continue targets that cannot be reached to
   // merge instruction that declares them.
   bool FixPhiNodesInLiveBlocks(
-      Function* func, const std::unordered_set<BasicBlock*>& live_blocks,
-      const std::unordered_map<BasicBlock*, BasicBlock*>&
+      Function* func, const absl::flat_hash_set<BasicBlock*>& live_blocks,
+      const absl::flat_hash_map<BasicBlock*, BasicBlock*>&
           unreachable_continues);
 
   // Erases dead blocks. Any block captured in |unreachable_merges| or
@@ -122,9 +122,9 @@ class DeadBranchElimPass : public MemPass {
   // |unreachable_continues| maps continue targets that cannot be reached to
   // corresponding header block that declares them.
   bool EraseDeadBlocks(
-      Function* func, const std::unordered_set<BasicBlock*>& live_blocks,
-      const std::unordered_set<BasicBlock*>& unreachable_merges,
-      const std::unordered_map<BasicBlock*, BasicBlock*>&
+      Function* func, const absl::flat_hash_set<BasicBlock*>& live_blocks,
+      const absl::flat_hash_set<BasicBlock*>& unreachable_merges,
+      const absl::flat_hash_map<BasicBlock*, BasicBlock*>&
           unreachable_continues);
 
   // Reorders blocks in reachable functions so that they satisfy dominator

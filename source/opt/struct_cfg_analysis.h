@@ -17,6 +17,8 @@
 
 #include <unordered_map>
 
+#include "absl/container/flat_hash_map.h"
+
 #include "source/opt/function.h"
 #include "source/util/bit_vector.h"
 
@@ -92,7 +94,7 @@ class StructuredCFGAnalysis {
 
   // A map from a basic block to the headers of its inner most containing
   // constructs.
-  std::unordered_map<uint32_t, ConstructInfo> bb_to_construct_;
+  absl::flat_hash_map<uint32_t, ConstructInfo> bb_to_construct_;
   utils::BitVector merge_blocks_;
 };
 

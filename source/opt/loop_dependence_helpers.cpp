@@ -205,7 +205,7 @@ const Loop* LoopDependenceAnalysis::GetLoopForSubscriptPair(
       std::get<1>(subscript_pair)->CollectRecurrentNodes();
 
   // Collect all the loops stored by the SERecurrentNodes.
-  std::unordered_set<const Loop*> loops{};
+  absl::flat_hash_set<const Loop*> loops{};
   for (auto source_nodes_it = source_nodes.begin();
        source_nodes_it != source_nodes.end(); ++source_nodes_it) {
     loops.insert((*source_nodes_it)->GetLoop());

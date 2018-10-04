@@ -153,13 +153,13 @@ struct LoopUnrollState {
 
   // A mapping of new block ids to the original blocks which they were copied
   // from.
-  std::unordered_map<uint32_t, BasicBlock*> new_blocks;
+  absl::flat_hash_map<uint32_t, BasicBlock*> new_blocks;
 
   // A mapping of the original instruction ids to the instruction ids to their
   // copies.
-  std::unordered_map<uint32_t, uint32_t> new_inst;
+  absl::flat_hash_map<uint32_t, uint32_t> new_inst;
 
-  std::unordered_map<uint32_t, Instruction*> ids_to_new_inst;
+  absl::flat_hash_map<uint32_t, Instruction*> ids_to_new_inst;
 };
 
 // This class implements the actual unrolling. It uses a LoopUnrollState to

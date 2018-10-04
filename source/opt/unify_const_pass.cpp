@@ -57,7 +57,7 @@ class ResultIdTrie {
   // The trie node to store result ids.
   class Node {
    public:
-    using TrieNodeMap = std::unordered_map<uint32_t, std::unique_ptr<Node>>;
+    using TrieNodeMap = absl::flat_hash_map<uint32_t, std::unique_ptr<Node>>;
 
     Node() : result_id_(0), next_() {}
     uint32_t result_id() const { return result_id_; }

@@ -17,6 +17,9 @@
 #include <unordered_set>
 #include <vector>
 
+#include "absl/container/flat_hash_map.h"
+#include "absl/container/flat_hash_set.h"
+
 #include "gmock/gmock.h"
 #include "source/opt/register_pressure.h"
 #include "test/opt/assembly_builder.h"
@@ -31,7 +34,7 @@ namespace {
 using ::testing::UnorderedElementsAre;
 using PassClassTest = PassTest<::testing::Test>;
 
-void CompareSets(const std::unordered_set<Instruction*>& computed,
+void CompareSets(const absl::flat_hash_set<Instruction*>& computed,
                  const std::unordered_set<uint32_t>& expected) {
   for (Instruction* insn : computed) {
     EXPECT_TRUE(expected.count(insn->result_id()))
@@ -1226,10 +1229,10 @@ TEST_F(PassClassTest, FissionSimulation) {
   {
     RegisterLiveness::RegionRegisterLiveness l1_sim_resut;
     RegisterLiveness::RegionRegisterLiveness l2_sim_resut;
-    std::unordered_set<Instruction*> moved_instructions{
+    absl::flat_hash_set<Instruction*> moved_instructions{
         def_use_mgr.GetDef(29), def_use_mgr.GetDef(30), def_use_mgr.GetDef(31),
         def_use_mgr.GetDef(31)->NextNode()};
-    std::unordered_set<Instruction*> copied_instructions{
+    absl::flat_hash_set<Instruction*> copied_instructions{
         def_use_mgr.GetDef(22), def_use_mgr.GetDef(27),
         def_use_mgr.GetDef(27)->NextNode(), def_use_mgr.GetDef(23)};
 
